@@ -188,3 +188,23 @@ button:hover {
 #newMapBtn:hover {
   background: #8a8a8a;
 }
+
+
+.location-marker {
+  background: rgba(255, 255, 255, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(2px);
+  transition: transform 0.2s, background 0.2s;
+}
+
+.location-marker:hover {
+  transform: scale(1.2);
+  background: rgba(255, 255, 255, 0.5);
+  z-index: 15;
+}
+
+.location-marker:active {
+  transform: scale(0.95);
+}
