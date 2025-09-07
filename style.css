@@ -1,0 +1,135 @@
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f9f5eb;
+  color: #333;
+  margin: 0;
+  padding: 0;
+}
+
+header {
+  padding: 1rem;
+  background: #e0d6c9;
+  border-bottom: 2px dashed #c2a88a;
+  display: flex;
+  justify-content: space-between;
+  font-weight: 500;
+}
+
+.scene {
+  display: none;
+  padding: 1.5rem;
+}
+
+.scene.active {
+  display: block;
+}
+
+#mapGrid {
+  width: 100%;
+  height: 400px;
+  background: #f0e6d2;
+  border: 2px solid #d4c5a8;
+  margin: 1rem 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.location-overlay {
+  position: absolute;
+  font-size: 2rem;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.location-overlay:hover {
+  transform: scale(1.1);
+}
+
+#itemGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.item-slot {
+  padding: 1rem;
+  background: #fff8e6;
+  border: 1px solid #e0d0b0;
+  border-radius: 8px;
+  text-align: center;
+}
+
+button {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  background: #5d9c59;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin: 0.5rem 0;
+}
+
+button:hover {
+  background: #4a7c45;
+}
+
+.item-slot {
+  padding: 1rem;
+  background: #fff8e6;
+  border: 1px solid #e0d0b0;
+  border-radius: 8px;
+  text-align: center;
+  position: relative;
+}
+
+.item-emoji {
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.item-name {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.item-price {
+  font-weight: 500;
+  margin: 0.25rem 0;
+}
+
+.deal-badge {
+  display: inline-block;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  margin-left: 0.5rem;
+}
+
+.deal-badge.good { background: #dcfce7; color: #166534; }
+.deal-badge.fair { background: #fef3c7; color: #92400e; }
+.deal-badge.poor { background: #fee2e2; color: #991b1b; }
+
+.quest-hint {
+  font-size: 0.85rem;
+  color: #5b21b6;
+  margin: 0.5rem 0;
+  font-style: italic;
+}
+
+.item-controls {
+  margin-top: 0.75rem;
+}
+
+.item-controls button {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.85rem;
+  margin: 0.1rem;
+}
+
+.item-controls .btn-buy { background: #4ade80; }
+.item-controls .btn-sell { background: #f87171; }
+.item-controls .btn-quick-buy { background: #22c55e; }
+.item-controls .btn-quick-sell { background: #ef4444; }
+.item-controls .btn-quantity { background: #e0e0e0; }

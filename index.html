@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cozy Trading Sim</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Global Header -->
+  <header id="globalHeader">
+    <span>Day: <span id="dayCounter">1</span></span>
+    <span>Gold: <span id="goldCounter">100</span> 🪙</span>
+    <span>Location: <span id="locationName">The Map</span></span>
+  </header>
+
+  <!-- Map Scene -->
+  <div id="mapScene" class="scene active">
+    <h1 id="mapName">🗺️ Generate Your World</h1>
+    <button id="generateMapBtn">Generate Map</button>
+    <div id="mapGrid"></div>
+    <div id="newsFeed">📰 Tap Generate to begin your journey...</div>
+    <div id="inventoryHeader">🎒 Inventory: 0 items</div>
+  </div>
+
+  <!-- Trade Scene -->
+  <div id="tradeScene" class="scene">
+    <button id="backToMapBtn">← Back to Map</button>
+    <h2 id="tradeLocationHeader">Trading at: ???</h2>
+    <div id="itemGrid">
+      <!-- Stub: will be populated by renderTradeUI() -->
+      <div class="item-slot">[Item Slot]</div>
+      <div class="item-slot">[Item Slot]</div>
+      <div class="item-slot">[Item Slot]</div>
+    </div>
+  </div>
+<!-- 
+  <script src="/js/utils/seedrandom.js"></script> -->
+
+
+
+
+  <!-- Utils -->
+<script src="/js/utils/seedrandom.js"></script>
+
+<!-- Core Game Systems -->
+<script src="/js/classes/GameState.js"></script>
+<script src="/js/classes/MarketLogic.js"></script>
+<script src="/js/classes/MarketActions.js"></script>
+
+<!-- Map Gen Systems (NEW) -->
+<script src="/js/classes/WaveFunctionCollapse.js"></script>
+<script src="/js/classes/MapNamer.js"></script>
+<script src="/js/classes/ParchmentOverlay.js"></script>
+
+<!-- Main App (depends on all above) -->
+<script src="main.js"></script>
+
+
+</body>
+</html>
