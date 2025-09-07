@@ -164,3 +164,27 @@ button:hover {
   z-index: 5;
   transform: translate(-50%, -50%);
 }
+
+
+.location-overlay {
+  position: absolute;
+  font-size: 2rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, filter 0.2s ease;
+  z-index: 15;
+}
+
+.location-overlay:hover {
+  transform: scale(1.15);
+  filter: drop-shadow(0 0 8px rgba(255, 255, 200, 0.8));
+}
+
+
+#newMapBtn {
+  background: #a3a3a3;
+  margin-left: 0.5rem;
+}
+
+#newMapBtn:hover {
+  background: #8a8a8a;
+}

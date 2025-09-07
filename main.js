@@ -37,14 +37,21 @@ window.addEventListener("DOMContentLoaded", async () => {
 
 // Scene Switchers
 function switchToMap() {
-  document.getElementById("mapScene").classList.add("active");
-  document.getElementById("tradeScene").classList.remove("active");
-  document.getElementById("locationName").textContent = "The Map";
+  document.getElementById('mapScene').classList.add('active');
+  document.getElementById('tradeScene').classList.remove('active');
+  document.getElementById('locationName').textContent = "The Map";
 
-  // ✅ Advance day to reflect travel
   gameState.day += 1;
 
-  renderMapUI(); // Updates everything: news, inventory, highlight
+  // ✅ Check for season end
+  if (gameState.day > 7) {
+    alert("🍂 Season has ended! Time to rest... and begin anew.");
+    gameState.reset();
+    document.getElementById('mapGrid').innerHTML = '';
+    document.getElementById('mapName').textContent = '🗺️ A New Season Begins';
+  }
+
+  renderMapUI();
 }
 
 function switchToTrade(locationIndex) {
@@ -297,12 +304,9 @@ function placeLocations(wfcMap, fantasyData) {
   return locations;
 }
 
-// Replace the old generate button handler
-
-document.getElementById("generateMapBtn").addEventListener("click", () => {
-  const SEED = Date.now().toString().slice(-5); // simple seed
-  const WIDTH = 10,
-    HEIGHT = 8;
+function generateNewMap() {
+  const SEED = Date.now().toString().slice(-5);
+  const WIDTH = 10, HEIGHT = 8;
 
   // Step 1: Generate terrain
   const wfc = new WaveFunctionCollapse(WIDTH, HEIGHT, gameState.fantasyData.elevation, SEED);
@@ -316,11 +320,65 @@ document.getElementById("generateMapBtn").addEventListener("click", () => {
   gameState.ingestWFCMap(placedLocations, SEED);
 
   // Step 4: Render parchment map
-  new ParchmentOverlay(terrainMap, placedLocations, document.getElementById("mapGrid"), gameState.fantasyData);
+  new ParchmentOverlay(
+    terrainMap,
+    placedLocations,
+    document.getElementById('mapGrid'),
+    gameState.fantasyData
+  );
 
   // Step 5: Update UI
-  document.getElementById("mapName").textContent = `🗺️ ${gameState.mapName} | Seed: ${SEED}`;
-  renderMapUI();
+  document.getElementById('mapName').textContent = `🗺️ ${gameState.mapName} | Seed: ${SEED}`;
+  renderMapUI(); // Highlights current loc, updates news, inventory, etc.
 
-  console.log("✅ Map generated with", placedLocations.length, "locations");
+  console.log("✅ New map generated with", placedLocations.length, "locations");
+}
+
+
+
+document.getElementById('newMapBtn').addEventListener('click', () => {
+  // Full reset
+  gameState.reset();
+  
+  // Clear map grid
+  document.getElementById('mapGrid').innerHTML = '';
+  
+  // Generate brand new map
+  generateNewMap();
+  
+  // Reset UI text (optional — generateNewMap() already updates mapName)
+  document.getElementById('newsFeed').textContent = '📰 A new journey begins...';
 });
+
+
+document.getElementById('generateMapBtn').addEventListener('click', () => {
+  generateNewMap(); // ✅ Now uses shared function
+});
+
+
+// document.getElementById("generateMapBtn0").addEventListener("click", () => {
+//   const SEED = Date.now().toString().slice(-5); // simple seed
+//   const WIDTH = 10,
+//     HEIGHT = 8;
+
+//   // Step 1: Generate terrain
+//   const wfc = new WaveFunctionCollapse(WIDTH, HEIGHT, gameState.fantasyData.elevation, SEED);
+//   wfc.collapse();
+//   const terrainMap = wfc.getFinalMap();
+
+//   // Step 2: Place locations
+//   const placedLocations = placeLocations(terrainMap, gameState.fantasyData);
+
+//   // Step 3: Ingest into GameState
+//   gameState.ingestWFCMap(placedLocations, SEED);
+
+//   // Step 4: Render parchment map
+//   new ParchmentOverlay(terrainMap, placedLocations, document.getElementById("mapGrid"), gameState.fantasyData);
+
+//   // Step 5: Update UI
+//   document.getElementById("mapName").textContent = `🗺️ ${gameState.mapName} | Seed: ${SEED}`;
+
+//   renderMapUI();
+
+//   console.log("✅ Map generated with", placedLocations.length, "locations");
+// });
