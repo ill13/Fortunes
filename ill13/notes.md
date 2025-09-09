@@ -1,8 +1,28 @@
-You and I are the founders of an indie game partnership that specializes in "cozy games". Together, we are building easy pick up and play games for casual players; we aren't concerned with multiplayer or monetization. Our games are meant to be played for 5-20 minutes per session. Just a few steps beyond clicker / idle games. This isn't enterprise level work, this is fun work! 
-
+You and I are the founders of an indie game collaboration that specializes in "cozy games". Together, we are building easy pick up and play games for casual players; we aren't concerned with multiplayer or monetization. Our games are meant to be played for 5-20 minutes per session. Just a few steps beyond clicker / idle games. This isn't enterprise level work, this is fun work! 
 
 
 Please do a deep dive on this code. We have some wonderful features to discuss! Remember this is a cozy sort of pick up and play game that is geared towards 5-20 minute sessions. We aren't trying to build the "greatest trading sim evah!" just a fun, honestly enjoyable, trading puzzle game for casuals to enjoy while waiting in a queue with just enough depth for enoyable replays. We don't want to bog players down with data and decisions. No bullshit, give me the brutal truth, tell me I'm wrong to make sure we have the best game.
+
+That said, we need to add both the Quest system and UI from our old game. However, we'd like to keep the palette from the new game. Please ask any questions you need answered before you get started. 
+
+
+
+Notes on what we need to address next:
+
+- Fix the days being off / starting Day 2
+- Fix the emoji shifting down on hover
+- Game should autogenerate a map on load
+
+
+
+- Fix random quest generation
+- Map screen and Trading screen: On the header, Show return to map emoji at far lefy Show location on the top next. Move location: name to top left. move gold and days to right side, add an inventory count display (22/30).
+- Map screen: Add a text box to enter the seed information to start a "same world", remove generate map. Below map, show 2 columns, one with new s and the quest, second column with complete inventory with emoji on left and item count, total cost of current items. 
+- Trading screen: Remove "Trading at:" completely.
+- 
+
+Now summarize everything we have done so far in as much detail as possible, but use extreme compression to compress it as much as possible into a format that you can still read. It does not need to be human readable. You do not need to use a common character set, all that matters is we can pick up exactly where we left off if I were to start a new conversation with you.
+
 
 
 
@@ -15,48 +35,11 @@ We need to implement this, do you have any questions? Remember this is a cozy so
 
 That said, I need you to take a good look at our current code base to refresh yourself with the project.
 
-Attached is some WFC demo code we are working on
-
-
-Modify WaveFunctionCollapse.js:
-Modify MapRenderer
-
-
-
-
-
-
-
-Modify GameState.js for WFC Integration
-Replace MapRenderer with ParchmentOverlay 
+tOverlay 
 Update Main.js Initialization:
 
 Sounds great! Would you generate code complete drop-in working replacements for GameState.js, Main.js, and MapRenderer.js as sonn as you are ready? Remember, don't overengineer -let's get this running today!
 
-
-
-
-- I've already cut and pasted the MarketActions code into /src/classes/MarketActions.js
-- I've removed the text "static " from MarketActions.js
-- I've written the import for Main.js "import { MarketActions } from "./classes/MarketActions.js";"
-- I've created a constructor "constructor(gameState) {
-        this.gameState = gameState;
-        this.marketLogic = marketLogic;
-    }"
-- I added "export" before "class MarketActions"
-- I added "const MarketActions = new MarketActions(gameState);" right after "const gameState = new GameState(game);"
-- I used find & replace in MarketActions to find " gameState." and replaced all with " this.gameState."
-- I used find & replace in MarketActions to find " marketLogic." and replaced all with " this.marketLogic."
-
-
-- I used the regex "MarketActions\.(\w+)\(" to find and replace with "MarketActions.$1("
-
-
-MarketActions\.(\w+)\( 
-
-to find and replace with 
-
-marketActions.$1(
 
 
 
@@ -66,19 +49,54 @@ Please do a deep dive on this code. We have some features to discuss.
 
 
 
- Would a game designer who's not a programmer benefit from being able to change this value without touching code?
-
-
-
-
-
-
+Would a game designer who's not a programmer benefit from being able to change this value without touching code?
 
 Discuss three professional and architecturally appropriate fixes for "Price calculation inconsistency", no code.
 
 
 
 What solution best fits our current architecture and is the easiest to both implement and maintain?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Now summarize this change process in as much detail as possible, you MUST use extreme compression to compress it as much as possible into a format that you can still read. The summary does NOT need to be human readable. You do NOT need to use a common character set, all that matters is that the summary is highly compressed and we can use this compressed summary as a reference when starting a new chat with you.
+
+Now summarize this design process and style in as much detail as possible, BUT use extreme compression to compress it as much as possible into a format that you can still read. It does NOT need to be human readable as we need to compact our token usage. You do NOT need to use a common character set, all that matters is that we can use this summary as a design reference when start a new conversation with you.
+
+Now summarize everything we have done so far in as much detail as possible, but use extreme compression to compress it as much as possible into a format that you can still read. It does not need to be human readable. You do not need to use a common character set, all that matters is we can pick up exactly where we left off if I were to start a new conversation with you.
+
+Please do a deep dive on this code. Pore over the code with a microscope step-by-step. Let us know ALL the relevant file names that need to be updated or referenced to address this. The implementations you suggest must keep the overall architecture intact. They must consider and work with AND for all the existing code, with only laser targeted changes. As always, don't over engineer, don't make extraneous architectural changes. Do adhere to KISS principles. Do not write any code yet, just discuss the issues I've listed.
+
+Any implementations you suggest must keep the overall architecture intact. They must consider and work with AND for all the existing code, with only laser targeted changes. As always, don't over engineer, don't make extraneous architectural changes. Do adhere to KISS principles. Do not write any code yet, just discuss.
+
+Please supply a code complete drop in replacement for 'view.html'
+
+Attached is our current project code. We need to Please do a deep dive on this code. Pore over the code with a microscope step-by-step. Let us know ALL the relevant file names that need to be updated or referenced to address this. The implementations you suggest must keep the overall architecture intact. They must consider and work with AND for all the existing code, with only laser targeted changes. As always, don't over engineer, don't make extraneous architectural changes. Do adhere to KISS principles. Do not write any code yet, just discuss.
+
+Use these specific phrases: "Analyze the HTML structure first" - Forces me to examine the actual DOM layout before suggesting solutions "What's the container hierarchy?" - Makes me trace parent-child relationships "Show me the specific element causing this" - Prevents generic CSS fixes "Trace this symptom to its structural root cause" - Stops pattern-matching to common issues The key is forcing structural analysis before solution-jumping.
+
+Analyze the HTML structure first, what's the container hierarchy?. Trace this symptom to its structural root cause.
+
+
+
+
+
+
+
+
+
+
 
 
 
