@@ -21,11 +21,13 @@ Notes on what we need to address next:
 - Trading screen: Remove "Trading at:" completely.
 - 
 
-Now summarize everything we have done so far in as much detail as possible, but use extreme compression to compress it as much as possible into a format that you can still read. It does not need to be human readable. You do not need to use a common character set, all that matters is we can pick up exactly where we left off if I were to start a new conversation with you.
+Now summarize your response in as much detail as possible, but use extreme compression to compress it as much as possible into a format that you can still read. It does not need to be human readable. You do not need to use a common character set, all that matters is we can pick up exactly where we left off if I were to start a new conversation with you.
 
 
+Take all of this information in deeply and then imagine you had to recreate this cozy trading sim from scratch. Please write a detailed software developement plan to build this as an MVP from zero. End the plan with a "fantasy.JSON" with all the game data needed. We build fast with no fallbacks. Please let me know if you have any questions before you get started!
+ 
 
-
+Finally, take all of this information in deeply and then imagine you had to integrate this all from scratch, with just source code from Fortunes. Please write a detailed software developement plan to complete this update. We build fast with no fallbacks. Please let me know if you have any questions before you get started!
 
 
 We need to implement this, do you have any questions? Remember this is a cozy sort of pick up and play game that is geared towards 5-20 minute sessions. We aren't trying to build the "greatest trading sim evah!" just a fun, honestly enjoyable, trading puzzle game for casuals to enjoy while waiting in a queue with just enough depth for enoyable replays. We don't want to bog players down with data and decisions. We can consider starting with simple calendar quests like Bramble Cottage needs a crystal orb or Ocean Wharf needs to tools for fishing, or whatver ideas you think can work. No code, let's discuss 
