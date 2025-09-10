@@ -36,7 +36,7 @@ async function initializeGame() {
   marketActions = new MarketActions(gameState, marketLogic);
 }
 
-function wireEventListeners() {
+function wireEventListeners00() {
   document.getElementById("backToMapBtn").addEventListener("click", () => {
     switchToMap();
   });
@@ -50,30 +50,66 @@ function wireEventListeners() {
   });
 }
 
+
+function wireEventListeners() {
+  // 🆕 Wire the map icon
+  document.getElementById("backToMapIcon").addEventListener("click", () => {
+    switchToMap();
+  });
+
+  // Wire the generate map button
+  document.getElementById("generateMapBtn").addEventListener("click", () => {
+    generateNewMap();
+  });
+
+  // Wire the new map button
+  document.getElementById("newMapBtn").addEventListener("click", () => {
+    resetGameAndGenerateMap();
+  });
+}
+
+
+
+
 // =============================================================================
 // SCENE MANAGEMENT
 // =============================================================================
+
+
 function switchToMap() {
   document.getElementById("mapScene").classList.add("active");
   document.getElementById("tradeScene").classList.remove("active");
+
+
+  document.getElementById("backToMapIcon").style.display = "block";
+
+
+  // ✅ Set location name to "The Map"
+    gameState.currentLocationIndex = null;
   document.getElementById("locationName").textContent = "The Map";
+  document.getElementById("locationIcon").textContent = "🗺️";
 
   gameState.day += 1;
   checkSeasonEnd();
   renderMapUI();
 }
 
-
-
-
-
 function switchToTrade(locationIndex) {
   gameState.setLocation(locationIndex);
   document.getElementById("mapScene").classList.remove("active");
   document.getElementById("tradeScene").classList.add("active");
+
   const location = gameState.getLocation();
-  // ✅ UPDATE: Use #locationName instead of #tradeLocationHeader
+
+
+  document.getElementById("locationIcon").style.display = "block";
+  
+
+  // ✅ Set location name to current location
   document.getElementById("locationName").textContent = location.name;
+  // 🆕 UPDATE: Set the emoji for the location icon
+  document.getElementById("locationIcon").textContent = location.emoji || "📍";
+
   updateTravelTime(location);
 
   // 🆕 AUTO-CHECK FOR QUEST DELIVERY
@@ -84,11 +120,6 @@ function switchToTrade(locationIndex) {
     renderTradeUI();
   }
 }
-
-
-
-
-
 
 
 
@@ -147,13 +178,10 @@ function generateNewMap() {
   overlay.render();
   renderLocationsOnMap(placedLocations); // 👈 DOM markers on top
   // Update UI
-  document.getElementById("mapName").textContent = `🗺️ ${gameState.mapName} | Seed: ${SEED}`;
+  document.getElementById("mapName").textContent = `${gameState.mapName} | Seed: ${SEED}`;
   renderMapUI();
   console.log("✅ New map generated with", placedLocations.length, "locations");
 }
-
-
-
 
 function resetGameAndGenerateMap() {
   gameState.reset();
@@ -191,64 +219,57 @@ function placeLocations(wfcMap, fantasyData) {
   return locations;
 }
 
-
-
-
-
-
-
 function renderLocationsOnMap(locations) {
-  const mapGrid = document.getElementById('mapGrid');
-  
-  // Clear previous location markers (optional — if you want to avoid duplicates)
-  document.querySelectorAll('.location-marker').forEach(el => el.remove());
+  const mapGrid = document.getElementById("mapGrid");
 
-  locations.forEach(location => {
-    const marker = document.createElement('div');
-    marker.className = 'location-marker';
+  // Clear previous location markers (optional — if you want to avoid duplicates)
+  document.querySelectorAll(".location-marker").forEach((el) => el.remove());
+
+  locations.forEach((location) => {
+    const marker = document.createElement("div");
+    marker.className = "location-marker";
     marker.style.left = `${location.x * 48 + 24 - 12}px`; // center horizontally
-    marker.style.top = `${location.y * 48 + 24 - 12}px`;   // center vertically
-    marker.style.position = 'absolute';
-    marker.style.zIndex = '10';
-    marker.style.width = '24px';
-    marker.style.height = '24px';
-    marker.style.display = 'flex';
-    marker.style.alignItems = 'center';
-    marker.style.justifyContent = 'center';
-    marker.style.fontSize = '20px';
-    marker.style.pointerEvents = 'auto'; // so you can click them!
-    marker.style.cursor = 'pointer';
-    marker.textContent = location.emoji || '📍';
+    marker.style.top = `${location.y * 48 + 24 - 12}px`; // center vertically
+    marker.style.position = "absolute";
+    marker.style.zIndex = "10";
+    marker.style.width = "24px";
+    marker.style.height = "24px";
+    marker.style.display = "flex";
+    marker.style.alignItems = "center";
+    marker.style.justifyContent = "center";
+    marker.style.fontSize = "20px";
+    marker.style.pointerEvents = "auto"; // so you can click them!
+    marker.style.cursor = "pointer";
+    marker.textContent = location.emoji || "📍";
 
     // Optional: tooltip
     marker.title = location.name;
 
     // Make it clickable
-    marker.addEventListener('click', () => {
-  switchToTrade(location._arrayIndex); // 👈 pass the actual array index
-});
+    marker.addEventListener("click", () => {
+      switchToTrade(location._arrayIndex); // 👈 pass the actual array index
+    });
 
     mapGrid.appendChild(marker);
   });
 }
 
-
 // 🆕 REPLACE showRandomNews()
 function updateNewsPanel() {
-  const content = document.getElementById('newsPanelContent');
-  content.innerHTML = '';
+  const content = document.getElementById("newsPanelContent");
+  content.innerHTML = "";
   const news = [...gameState.fantasyData.genericNews];
   // Add Quest if active
   if (gameState.currentQuest) {
     const quest = gameState.currentQuest;
     const targetLoc = gameState.locations[quest.toIndex];
-    const questEl = document.createElement('div');
-    questEl.className = 'quest-item';
+    const questEl = document.createElement("div");
+    questEl.className = "quest-item";
     questEl.innerHTML = `
       📋 <strong>${quest.itemName}</strong> x${quest.required} for ${targetLoc.name}
       <br><small>→ Reward: 🪙 ${quest.reward}</small>
     `;
-    questEl.addEventListener('click', () => {
+    questEl.addEventListener("click", () => {
       switchToTrade(quest.toIndex);
     });
     content.appendChild(questEl);
@@ -256,9 +277,9 @@ function updateNewsPanel() {
   }
   // Add 1-2 random news
   const randomNews = news.sort(() => 0.5 - Math.random()).slice(0, 2);
-  randomNews.forEach(text => {
-    const item = document.createElement('div');
-    item.className = 'news-item';
+  randomNews.forEach((text) => {
+    const item = document.createElement("div");
+    item.className = "news-item";
     item.textContent = text;
     content.appendChild(item);
   });
@@ -266,17 +287,17 @@ function updateNewsPanel() {
 
 // 🆕 NEW FUNCTION
 function updateInventoryPanel() {
-  const content = document.getElementById('inventoryPanelContent');
-  content.innerHTML = '';
+  const content = document.getElementById("inventoryPanelContent");
+  content.innerHTML = "";
   const items = gameState.fantasyData.items;
   const inventory = gameState.inventory;
   let hasItems = false;
-  items.forEach(item => {
+  items.forEach((item) => {
     const count = inventory[item.id] || 0;
     if (count > 0) {
       hasItems = true;
-      const itemEl = document.createElement('div');
-      itemEl.className = 'inventory-item';
+      const itemEl = document.createElement("div");
+      itemEl.className = "inventory-item";
       itemEl.innerHTML = `
         <span class="inventory-item-icon">${item.emoji}</span>
         <span>${item.name}: ${count}</span>
@@ -288,29 +309,6 @@ function updateInventoryPanel() {
     content.innerHTML = '<div class="news-item">Your pack is light. Go buy something!</div>';
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 function findValidPosition(wfcMap, template, usedPositions, width, height) {
   const candidates = [];
@@ -367,14 +365,6 @@ function renderMapUI() {
   highlightCurrentLocation();
 }
 
-
-
-
-
-
-
-
-
 function renderTradeUI() {
   const grid = document.getElementById("itemGrid");
   grid.innerHTML = "";
@@ -385,14 +375,14 @@ function renderTradeUI() {
   }
 
   // 🆕 Add Quest Banner
-  const bannerContainer = document.getElementById('questBanner');
-  bannerContainer.style.display = 'none';
+  const bannerContainer = document.getElementById("questBanner");
+  bannerContainer.style.display = "none";
   if (QuestLogic.updateNewsUI(gameState)) {
     const quest = gameState.currentQuest;
-    const item = gameState.fantasyData.items.find(i => i.id === quest.itemId);
+    const item = gameState.fantasyData.items.find((i) => i.id === quest.itemId);
     const delivered = quest.delivered || 0;
     const remaining = quest.required - delivered;
-    bannerContainer.style.display = 'block';
+    bannerContainer.style.display = "block";
     bannerContainer.innerHTML = `
       <strong>📋 Deliver ${item.name} to ${gameState.locations[quest.toIndex].name}</strong><br>
       You have ${delivered}, need ${quest.required}<br>
@@ -401,15 +391,14 @@ function renderTradeUI() {
   }
 
   // 🆕 Add Market Insight
-  const insightEl = document.getElementById('marketInsight');
+  const insightEl = document.getElementById("marketInsight");
   const items = gameState.fantasyData.items;
-  const avgRatio = items.reduce((sum, item) => {
-    const price = marketLogic.getPrice(item.id, location.template);
-    return sum + (price / item.basePrice);
-  }, 0) / items.length;
-  const insightText = avgRatio <= 0.95 ? "🌟 Great prices here! (10% below average)" :
-                     avgRatio <= 1.05 ? "🙂 Fair market today." :
-                     "⚠️ Overpriced — try elsewhere";
+  const avgRatio =
+    items.reduce((sum, item) => {
+      const price = marketLogic.getPrice(item.id, location.template);
+      return sum + price / item.basePrice;
+    }, 0) / items.length;
+  const insightText = avgRatio <= 0.95 ? "🌟 Great prices here! (10% below average)" : avgRatio <= 1.05 ? "🙂 Fair market today." : "⚠️ Overpriced — try elsewhere";
   insightEl.textContent = insightText;
 
   // Render Items — ✅ STRUCTURE MATCHES OLD VERSION
@@ -471,20 +460,6 @@ function renderTradeUI() {
   updateGlobalCounters();
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 function createItemSlot(item, price, stock, owned, dealQuality, questHint) {
   const slot = document.createElement("div");
   slot.className = "item-slot";
@@ -511,11 +486,25 @@ function createItemSlot(item, price, stock, owned, dealQuality, questHint) {
   return slot;
 }
 
+
 function updateGlobalCounters() {
   document.getElementById("goldCounter").textContent = gameState.gold;
   document.getElementById("dayCounter").textContent = gameState.day;
-  // Inventory count is now handled by updateInventoryPanel(), not a global header.
+  // ✅ Update the location name in the new header
+  const locationNameElement = document.getElementById("locationName");
+  if (gameState.currentLocationIndex !== null) {
+    const location = gameState.getLocation();
+    if (location) {
+      locationNameElement.textContent = location.name;
+    }
+  } else {
+    locationNameElement.textContent = "The Map";
+
+  }
+  // Inventory count is handled by updateInventoryPanel()
 }
+
+
 
 function showRandomNews() {
   const news = gameState.fantasyData.genericNews;
@@ -531,15 +520,15 @@ function highlightCurrentLocation() {
   if (!currentLocation) return;
 
   // ➕ NEW: Highlight the marker itself
-  document.querySelectorAll('.location-marker').forEach(marker => {
+  document.querySelectorAll(".location-marker").forEach((marker) => {
     if (marker.textContent === currentLocation.emoji) {
-      marker.style.background = 'rgba(255, 255, 200, 0.6)';
-      marker.style.border = '2px solid gold';
-      marker.style.transform = 'scale(1.3)';
+      marker.style.background = "rgba(255, 255, 200, 0.6)";
+      marker.style.border = "2px solid gold";
+      marker.style.transform = "scale(1.3)";
     } else {
-      marker.style.background = 'rgba(255, 255, 255, 0.3)';
-      marker.style.border = '2px solid rgba(255, 255, 255, 0.6)';
-      marker.style.transform = 'scale(1)';
+      marker.style.background = "rgba(255, 255, 255, 0.3)";
+      marker.style.border = "2px solid rgba(255, 255, 255, 0.6)";
+      marker.style.transform = "scale(1)";
     }
   });
 
@@ -548,8 +537,8 @@ function highlightCurrentLocation() {
   ring.className = "current-location-ring";
   ring.style.left = `${currentLocation.x * 48 + 24}px`; // center of tile
   ring.style.top = `${currentLocation.y * 48 + 24}px`;
-  ring.style.position = 'absolute';
-  ring.style.zIndex = '5'; // under markers but over map
+  ring.style.position = "absolute";
+  ring.style.zIndex = "5"; // under markers but over map
   document.getElementById("mapGrid").appendChild(ring);
 }
 
@@ -631,17 +620,14 @@ function getDealQuality(price, basePrice) {
   }
 }
 
-
 function getDealDescription(itemId, currentLocationId) {
   if (Math.random() > 0.3) return "";
-  const otherLocations = gameState.fantasyData.tradeNodes.filter(loc => loc.id !== currentLocationId);
+  const otherLocations = gameState.fantasyData.tradeNodes.filter((loc) => loc.id !== currentLocationId);
   if (otherLocations.length === 0) return "";
   const target = otherLocations[Math.floor(Math.random() * otherLocations.length)];
-  const itemName = gameState.fantasyData.items.find(i => i.id === itemId)?.name || "this item";
+  const itemName = gameState.fantasyData.items.find((i) => i.id === itemId)?.name || "this item";
   return `Perfect for your quest!`;
 }
-
-
 
 function getQuestHint(itemId, currentLocationId) {
   // 30% chance to show a quest hint

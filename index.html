@@ -8,15 +8,32 @@
   </head>
   <body>
     <!-- Global Header -->
-    <header id="globalHeader">
-      <span>Day: <span id="dayCounter">1</span></span>
-      <span>Gold: <span id="goldCounter">100</span> 🪙</span>
-      <span>Location: <span id="locationName">The Map</span></span>
+    <!-- Replace the entire <header id="globalHeader"> block with this -->
+    <header class="header">
+      <!-- REPLACE THE HEADER'S .header-left SECTION WITH THIS -->
+      <div class="header-left">
+        <!-- MAP ICON (conditionally shown) - Now styled like map markers -->
+        <div id="backToMapIcon" class="header-map-marker" style="display: none">🗺️</div>
+        <!-- DIVIDER -->
+        <div class="header-divider">|</div>
+        <!-- LOCATION ICON (conditionally shown) - Now a simple, larger visual -->
+        <div id="locationIcon" class="header-location-visual">🏛️</div>
+        <!-- Location Name & Subtitle -->
+        <div class="location-display">
+          <div class="location-name" id="locationName">The Map</div>
+          <div class="location-subtitle">Current Location</div>
+        </div>
+      </div>
+      <div class="header-stats">
+        <div class="stat-item"><span class="stat-label">Day</span> <span class="stat-value" id="dayCounter">1</span>/<span class="stat-value">7</span></div>
+        <div class="stat-item"><span class="stat-label">Gold:</span> <span class="stat-value" id="goldCounter">100</span> 🪙</div>
+        <div class="stat-item"><span class="stat-label">Inv</span> <span class="stat-value" id="inventoryCount">0/15</span></div>
+      </div>
     </header>
 
     <!-- Map Scene -->
     <div id="mapScene" class="scene active">
-      <h1 id="mapName">🗺️ Generate Your World</h1>
+      <h1 id="mapName">Generate Your World</h1>
       <button id="generateMapBtn">Generate Map</button>
       <button id="newMapBtn">✨ New Map</button>
       <div id="mapGrid"></div>
@@ -32,19 +49,20 @@
       </div>
     </div>
 
-<!-- Trade Scene -->
-<div id="tradeScene" class="scene">
-  <button id="backToMapBtn">← Back to Map</button>
-  <div id="tradeHeader">
-    <div id="locationName"></div> <!-- ✅ This is where the location name goes now -->
-    <div id="travelTime"></div>
-  </div>
-  <div id="tradeContent">
-    <div id="questBanner" class="panel-banner"></div>
-    <div id="marketInsight" class="panel-insight"></div>
-    <div id="itemGrid"></div>
-  </div>
-</div>
+    <!-- Trade Scene -->
+    <div id="tradeScene" class="scene">
+      <!-- ✅ REMOVED: <button id="backToMapBtn">← Back to Map</button> -->
+      <div id="tradeHeader">
+        <div id="locationName"></div>
+        <!-- ✅ This is where the location name goes now -->
+        <div id="travelTime"></div>
+      </div>
+      <div id="tradeContent">
+        <div id="questBanner" class="panel-banner"></div>
+        <div id="marketInsight" class="panel-insight"></div>
+        <div id="itemGrid"></div>
+      </div>
+    </div>
 
     <!-- Utils -->
     <script src="js/utils/seedrandom.js"></script>

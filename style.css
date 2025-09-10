@@ -7,15 +7,6 @@ body {
   padding: 0;
 }
 
-header {
-  padding: 1rem;
-  background: #e0d6c9;
-  border-bottom: 2px dashed #c2a88a;
-  display: flex;
-  justify-content: space-between;
-  font-weight: 500;
-}
-
 button {
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
@@ -415,4 +406,232 @@ button:hover {
   color: #5b21b6;
   margin: 0.5rem 0;
   font-style: italic;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* === 📢 HEADER STYLES === */
+.header {
+    background: #e0d6c9; /* Replaces var(--theme-bg-secondary) */
+    padding: 12px 24px;
+    border-bottom: 3px solid #c2a88a; /* Replaces var(--theme-border-accent) */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 60px; /* Replaces var(--header-height) */
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px; /* Replaces var(--content-gap) */
+}
+
+.location-display {
+    display: flex;
+    flex-direction: column;
+    gap: 4px; /* Replaces var(--content-gap) */
+}
+
+.location-name {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #333; /* Replaces var(--theme-text-gold) */
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.2); /* Replaces var(--shadow-game) */
+}
+
+.location-subtitle {
+    font-size: 0.7rem;
+    color: #666; /* Replaces var(--theme-text-muted) */
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.header-stats {
+    display: flex;
+    gap: 12px; /* Replaces var(--content-gap) */
+    font-size: 0.7rem;
+}
+
+.stat-item {
+    padding: 4px 8px; /* Replaces var(--item-padding) */
+    background: rgba(255, 255, 255, 0.6); /* Replaces var(--theme-text-bg-alpha) */
+    border-radius: 6px; /* Replaces var(--border-radius) */
+    border: 1px solid #d4c5a8; /* Replaces var(--theme-border-primary) */
+}
+
+.stat-label {
+    color: #666; /* Replaces var(--theme-text-muted) */
+}
+
+.stat-value {
+    color: #333; /* Replaces var(--theme-text-gold) */
+    font-weight: bold;
+}
+
+/* === REMOVE OR COMMENT OUT THE OLD HEADER STYLE === */
+/*
+header {
+  padding: 1rem;
+  background: #e0d6c9;
+  border-bottom: 2px dashed #c2a88a;
+  display: flex;
+  justify-content: space-between;
+  font-weight: 500;
+}
+*/
+
+
+
+
+
+
+
+
+
+
+/* Add this new rule to your CSS, perhaps near the .header styles */
+.back-to-map-icon {
+    display: none; /* Hidden by default */
+}
+
+/* We can also add a subtle hover effect for better UX */
+.back-to-map-icon:hover {
+    transform: scale(1.1);
+    filter: drop-shadow(3px 3px 6px rgba(0, 0, 0, 0.5));
+}
+
+
+
+/* Add this new rule for the header marker */
+.header-location-marker {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(2px);
+  cursor: pointer;
+  font-size: 1.2rem; /* Smaller than the 1.8rem in the old version */
+  filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.5));
+  transition: transform 0.2s, background 0.2s;
+}
+
+.header-location-marker:hover {
+  transform: scale(1.1);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Add style for the divider */
+.header-divider {
+  color: #666;
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin: 0 4px;
+}
+
+/* Update the gap in .header-left to be smaller for a tighter group */
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 6px; /* Reduced from 12px */
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* === 🆕 HEADER MAP MARKER (for the 'back to map' button) === */
+/* This copies the style from the map's .location-marker */
+.header-map-marker {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(2px);
+  cursor: pointer;
+  font-size: 1.2rem;
+  filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.5));
+  transition: transform 0.2s, background 0.2s;
+}
+
+.header-map-marker:hover {
+  transform: scale(1.1);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* === 🆕 HEADER LOCATION VISUAL (non-interactive icon) === */
+.header-location-visual {
+  font-size: 1.8rem; /* Larger than the map marker */
+  filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.5));
+  /* No background, border, or special cursor */
+  /* Inherits default cursor */
+}
+
+/* Update the divider to ensure proper spacing */
+.header-divider {
+  color: #666;
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin: 0 4px;
+  display: flex;
+  align-items: center;
+}
+
+/* Update the gap in .header-left to be smaller for a tighter group */
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 6px; /* Reduced from 12px */
 }
