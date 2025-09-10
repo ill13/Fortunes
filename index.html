@@ -32,17 +32,19 @@
       </div>
     </div>
 
-    <!-- Trade Scene -->
-    <div id="tradeScene" class="scene">
-      <button id="backToMapBtn">← Back to Map</button>
-      <h2 id="tradeLocationHeader">Trading at: ???</h2>
-      <div id="travelTime">🚶 Travel Time: ? days</div>
-      <div id="itemGrid">
-        <div class="item-slot">[Item Slot]</div>
-        <div class="item-slot">[Item Slot]</div>
-        <div class="item-slot">[Item Slot]</div>
-      </div>
-    </div>
+<!-- Trade Scene -->
+<div id="tradeScene" class="scene">
+  <button id="backToMapBtn">← Back to Map</button>
+  <div id="tradeHeader">
+    <div id="locationName"></div> <!-- ✅ This is where the location name goes now -->
+    <div id="travelTime"></div>
+  </div>
+  <div id="tradeContent">
+    <div id="questBanner" class="panel-banner"></div>
+    <div id="marketInsight" class="panel-insight"></div>
+    <div id="itemGrid"></div>
+  </div>
+</div>
 
     <!-- Utils -->
     <script src="js/utils/seedrandom.js"></script>

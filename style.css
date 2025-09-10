@@ -1,3 +1,4 @@
+/* === Base Styles === */
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background: #f9f5eb;
@@ -15,51 +16,6 @@ header {
   font-weight: 500;
 }
 
-.scene {
-  display: none;
-  padding: 1.5rem;
-}
-
-.scene.active {
-  display: block;
-}
-
-#mapGrid {
-  width: 100%;
-  height: 400px;
-  background: #f0e6d2;
-  border: 2px solid #d4c5a8;
-  margin: 1rem 0;
-  position: relative;
-  overflow: hidden;
-}
-
-.location-overlay {
-  position: absolute;
-  font-size: 2rem;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-
-.location-overlay:hover {
-  transform: scale(1.1);
-}
-
-#itemGrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.item-slot {
-  padding: 1rem;
-  background: #fff8e6;
-  border: 1px solid #e0d0b0;
-  border-radius: 8px;
-  text-align: center;
-}
-
 button {
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
@@ -75,96 +31,25 @@ button:hover {
   background: #4a7c45;
 }
 
-.item-slot {
-  padding: 1rem;
-  background: #fff8e6;
-  border: 1px solid #e0d0b0;
-  border-radius: 8px;
-  text-align: center;
-  position: relative;
+.scene {
+  display: none;
+  padding: 1.5rem;
 }
 
-.item-emoji {
-  font-size: 1.8rem;
-  margin-bottom: 0.5rem;
+.scene.active {
+  display: block;
 }
 
-.item-name {
-  font-weight: 600;
-  margin-bottom: 0.25rem;
-}
-
-.item-price {
-  font-weight: 500;
-  margin: 0.25rem 0;
-}
-
-.deal-badge {
-  display: inline-block;
-  padding: 0.1rem 0.4rem;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  margin-left: 0.5rem;
-}
-
-.deal-badge.good { background: #dcfce7; color: #166534; }
-.deal-badge.fair { background: #fef3c7; color: #92400e; }
-.deal-badge.poor { background: #fee2e2; color: #991b1b; }
-
-.quest-hint {
-  font-size: 0.85rem;
-  color: #5b21b6;
-  margin: 0.5rem 0;
-  font-style: italic;
-}
-
-.item-controls {
-  margin-top: 0.75rem;
-}
-
-.item-controls button {
-  padding: 0.25rem 0.5rem;
-  font-size: 0.85rem;
-  margin: 0.1rem;
-}
-
-.item-controls .btn-buy { background: #4ade80; }
-.item-controls .btn-sell { background: #f87171; }
-.item-controls .btn-quick-buy { background: #22c55e; }
-.item-controls .btn-quick-sell { background: #ef4444; }
-.item-controls .btn-quantity { background: #e0e0e0; }
-
-
-
-#travelTime {
-  font-size: 0.9rem;
-  color: #555;
-  margin-bottom: 1rem;
-  font-style: italic;
-}
-
-#newsFeed {
-  padding: 0.75rem 1rem;
-  background: #fdf6e9;
-  border: 1px solid #e9d9b8;
-  border-radius: 6px;
+/* === Map & Location === */
+#mapGrid {
+  width: 100%;
+  height: 400px;
+  background: #f0e6d2;
+  border: 2px solid #d4c5a8;
   margin: 1rem 0;
-  font-style: italic;
-  color: #6b4d22;
-  min-height: 2rem;
+  position: relative;
+  overflow: hidden;
 }
-
-.current-location-ring {
-  position: absolute;
-  width: 36px;
-  height: 36px;
-  border: 2px solid hsl(0, 100%, 52%); /* yellow-400 */
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 5;
-  transform: translate(-50%, -50%);
-}
-
 
 .location-overlay {
   position: absolute;
@@ -179,16 +64,16 @@ button:hover {
   filter: drop-shadow(0 0 8px rgba(255, 255, 200, 0.8));
 }
 
-
-#newMapBtn {
-  background: #a3a3a3;
-  margin-left: 0.5rem;
+.current-location-ring {
+  position: absolute;
+  width: 36px;
+  height: 36px;
+  border: 2px solid hsl(0, 100%, 52%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 5;
+  transform: translate(-50%, -50%);
 }
-
-#newMapBtn:hover {
-  background: #8a8a8a;
-}
-
 
 .location-marker {
   background: rgba(255, 255, 255, 0.3);
@@ -209,30 +94,23 @@ button:hover {
   transform: scale(0.95);
 }
 
+#newMapBtn {
+  background: #a3a3a3;
+  margin-left: 0.5rem;
+}
 
+#newMapBtn:hover {
+  background: #8a8a8a;
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+/* === Panels === */
 .map-panels {
   display: flex;
   gap: 1rem;
   margin-top: 1rem;
   height: 160px;
 }
+
 .news-panel, .inventory-panel {
   flex: 1;
   background: var(--color-panel-bg);
@@ -242,17 +120,21 @@ button:hover {
   display: flex;
   flex-direction: column;
 }
+
 .news-panel { flex: 2; }
+
 .panel-content {
   flex: 1;
   padding: 0.5rem;
   overflow-y: auto;
   font-size: 0.9rem;
 }
+
 .news-item, .inventory-item {
   padding: 0.25rem 0;
   border-bottom: 1px dotted var(--color-panel-border);
 }
+
 .quest-item {
   background: var(--color-quest-bg);
   border-left: 3px solid var(--color-quest-border);
@@ -264,27 +146,273 @@ button:hover {
   align-items: center;
   gap: 0.5rem;
 }
+
 .quest-item:hover {
   background: rgba(74, 222, 128, 0.2);
 }
+
 .inventory-item {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
+
 .inventory-item-icon {
   font-size: 1.2rem;
   animation: sway 3s ease-in-out infinite alternate;
 }
+
 @keyframes sway {
   0% { transform: rotate(-3deg) scale(1.05); }
   100% { transform: rotate(3deg) scale(1.0); }
 }
 
+/* === Trade Scene === */
+#tradeScene {
+  background: var(--color-wood);
+  border: 2px solid var(--color-gold);
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
 
+#tradeHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--color-panel-border);
+}
 
+#locationName {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--color-text);
+}
 
+#travelTime {
+  font-size: 0.9rem;
+  color: #999;
+  margin-bottom: 1rem;
+  font-style: italic;
+}
 
+#tradeContent {
+  background: var(--color-panel-bg);
+  border: 1px solid var(--color-panel-border);
+  border-radius: 6px;
+  padding: 1rem;
+  min-height: 300px;
+}
 
+.panel-banner {
+  background: var(--color-emerald);
+  color: white;
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  font-weight: bold;
+  text-align: center;
+  border-left: 4px solid var(--color-emerald);
+}
 
+.panel-insight {
+  background: var(--color-ruby);
+  color: white;
+  padding: 0.5rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  font-style: italic;
+  text-align: center;
+  border-left: 4px solid var(--color-ruby);
+}
 
+/* === Item Grid & Rows === */
+#itemGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.item-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  gap: 12px;
+  align-items: center;
+  padding: 8px 12px;
+  margin: 1px 0;
+  background: #fff8e6;
+  border-radius: 6px;
+  border-left: 3px solid #e0d0b0;
+  transition: all 0.2s;
+}
+
+.item-row:hover {
+  transform: translateX(4px);
+  box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.item-row.good-deal {
+  border-left-color: var(--color-emerald);
+  background: var(--color-panel-bg);
+}
+
+.item-row.bad-deal {
+  border-left-color: var(--color-ruby);
+  background: linear-gradient(135deg, var(--color-panel-bg), rgba(248, 113, 113, 0.1));
+}
+
+/* === Item Visuals === */
+.item-visual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.item-icon {
+  font-size: 1.8rem;
+  filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.deal-indicator {
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  min-width: 45px;
+  text-align: center;
+}
+
+.deal-great { background: var(--color-emerald); color: white; }
+.deal-good { background: #fbbf24; color: #333; }
+.deal-fair { background: #e0d0b0; color: #666; }
+.deal-poor { background: var(--color-ruby); color: white; }
+
+/* === Item Info === */
+.item-info {
+  flex: 1;
+}
+
+.item-header {
+  color: #333;
+  display: flex;
+  align-items: center;
+  font-size: 1rem;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.item-price {
+  color: #333;
+  font-weight: bold;
+  font-size: 0.9rem;
+  margin-left: 8px;
+}
+
+.item-meta {
+  color: #666;
+  font-size: 0.8rem;
+  line-height: 1.3;
+}
+
+.owned-count {
+  color: #333;
+  font-weight: bold;
+}
+
+/* === Controls & Buttons === */
+.quantity-action-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.action-button {
+  font-size: 0.9rem;
+  font-weight: bold;
+  padding: 8px 12px;
+  flex: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn {
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  padding: 4px 8px;
+  font-size: 0.8rem;
+  flex: 1;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-buy { background: var(--color-emerald); color: white; }
+.btn-sell { background: var(--color-ruby); color: white; }
+
+.quantity-btn {
+  background: var(--color-panel-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-panel-border);
+  padding: 0.3rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.buy-controls,
+.sell-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  width: 120px;
+}
+
+.no-stock {
+  opacity: 0.6;
+}
+
+/* === News Feed === */
+#newsFeed {
+  padding: 0.75rem 1rem;
+  background: #fdf6e9;
+  border: 1px solid #e9d9b8;
+  border-radius: 6px;
+  margin: 1rem 0;
+  font-style: italic;
+  color: #6b4d22;
+  min-height: 2rem;
+}
+
+.quest-hint {
+  font-size: 0.85rem;
+  color: #5b21b6;
+  margin: 0.5rem 0;
+  font-style: italic;
+}

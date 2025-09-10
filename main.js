@@ -63,26 +63,34 @@ function switchToMap() {
   renderMapUI();
 }
 
+
+
+
+
 function switchToTrade(locationIndex) {
   gameState.setLocation(locationIndex);
   document.getElementById("mapScene").classList.remove("active");
   document.getElementById("tradeScene").classList.add("active");
   const location = gameState.getLocation();
+  // ✅ UPDATE: Use #locationName instead of #tradeLocationHeader
   document.getElementById("locationName").textContent = location.name;
-  document.getElementById("tradeLocationHeader").textContent = `Trading at: ${location.name}`;
   updateTravelTime(location);
 
   // 🆕 AUTO-CHECK FOR QUEST DELIVERY
-  // This handles partial deliveries if the player arrives with quest items.
   if (QuestLogic.checkQuestDelivery(gameState)) {
-    // If something was delivered, re-render both UIs to reflect changes.
     renderTradeUI();
     renderMapUI();
   } else {
-    // If nothing was delivered, proceed with normal render.
     renderTradeUI();
   }
 }
+
+
+
+
+
+
+
 
 function checkSeasonEnd() {
   if (gameState.day > 7) {
@@ -363,6 +371,10 @@ function renderMapUI() {
 
 
 
+
+
+
+
 function renderTradeUI() {
   const grid = document.getElementById("itemGrid");
   grid.innerHTML = "";
@@ -373,94 +385,99 @@ function renderTradeUI() {
   }
 
   // 🆕 Add Quest Banner
-  const bannerContainer = document.createElement('div');
-  bannerContainer.id = 'questBanner';
-  bannerContainer.style.margin = '1rem 0';
-  bannerContainer.style.padding = '0.75rem';
-  bannerContainer.style.borderRadius = '6px';
+  const bannerContainer = document.getElementById('questBanner');
   bannerContainer.style.display = 'none';
-  document.querySelector('#tradeScene h2').after(bannerContainer);
-
-  // 🆕 Add Market Insight
-  const insightEl = document.createElement('div');
-  insightEl.id = 'marketInsight';
-  insightEl.style.fontSize = '0.9rem';
-  insightEl.style.color = '#555';
-  insightEl.style.marginBottom = '1rem';
-  document.querySelector('#tradeScene h2').after(insightEl);
-
-  // Calculate Market Insight
-  const items = gameState.fantasyData.items;
-  const avgRatio = items.reduce((sum, item) => {
-    const price = marketLogic.getPrice(item.id, location.template);
-    return sum + (price / item.basePrice);
-  }, 0) / items.length;
-  const insightText = avgRatio <= 0.95 ? "🌟 Great deals here! (Below avg)" :
-                     avgRatio <= 1.05 ? "🙂 Fair market today." :
-                     "⚠️ Prices are steep. Shop wisely.";
-  insightEl.textContent = insightText;
-
-  // 🆕 INLINE renderItemSlots LOGIC HERE
-  const itemsToRender = gameState.fantasyData.items;
-  itemsToRender.forEach((item) => {
-    const price = marketLogic.getPrice(item.id, location.template);
-    const owned = gameState.inventory[item.id] || 0;
-    const stock = 5 + Math.floor(Math.random() * 6); // Temporary stock logic
-    const dealQuality = getDealQuality(price, item.basePrice);
-
-    const slot = document.createElement("div");
-    slot.className = "item-slot";
-    slot.dataset.itemId = item.id;
-    slot.innerHTML = `
-      <div class="item-emoji">${item.emoji}</div>
-      <div class="item-name">${item.name}</div>
-      <div class="item-price">🪙 ${price} <span class="deal-badge ${dealQuality.class}">${dealQuality.label}</span></div>
-      <div class="item-stock">📦 Stock: ${stock}</div>
-      <div class="item-owned">🎒 Yours: ${owned}</div>
-      <div class="item-controls">
-        <button class="btn-quantity" data-action="decrease" data-item="${item.id}">−</button>
-        <button class="btn-buy" data-item="${item.id}">Buy 1</button>
-        <button class="btn-sell" data-item="${item.id}">Sell 1</button>
-        <button class="btn-quantity" data-action="increase" data-item="${item.id}">+</button>
-        <br>
-        <button class="btn-quick-buy" data-item="${item.id}">Buy All</button>
-        <button class="btn-quick-sell" data-item="${item.id}">Sell All</button>
-      </div>
-    `;
-    grid.appendChild(slot);
-  });
-
-  // 🆕 Handle Quest Banner
   if (QuestLogic.updateNewsUI(gameState)) {
     const quest = gameState.currentQuest;
     const item = gameState.fantasyData.items.find(i => i.id === quest.itemId);
     const delivered = quest.delivered || 0;
     const remaining = quest.required - delivered;
     bannerContainer.style.display = 'block';
-    bannerContainer.style.background = 'var(--color-quest-bg)';
-    bannerContainer.style.border = '2px solid var(--color-quest-border)';
     bannerContainer.innerHTML = `
-      <strong>📋 QUEST: Deliver ${item.name}</strong><br>
-      Required: ${quest.required} | Delivered: ${delivered} | Remaining: ${remaining}<br>
-      Reward: 🪙 ${quest.reward}<br>
-      <button id="deliverQuestBtn" style="margin-top: 0.5rem; background: var(--color-emerald);">✅ Deliver Now</button>
+      <strong>📋 Deliver ${item.name} to ${gameState.locations[quest.toIndex].name}</strong><br>
+      You have ${delivered}, need ${quest.required}<br>
+      Reward: 🪙 ${quest.reward}
     `;
-    document.getElementById('deliverQuestBtn').addEventListener('click', () => {
-      if (QuestLogic.deliverQuest(gameState)) {
-        alert(`🎉 Quest Complete! You earned 🪙 ${quest.reward}`);
-        // Generate new quest
-        const newQuest = QuestLogic.generateQuest(gameState, gameState.currentLocationIndex, gameState.mapSeed, gameState.day);
-        gameState.setQuest(newQuest);
-      }
-      renderTradeUI();
-      renderMapUI();
-    });
   }
 
-  // Wire up all buttons
+  // 🆕 Add Market Insight
+  const insightEl = document.getElementById('marketInsight');
+  const items = gameState.fantasyData.items;
+  const avgRatio = items.reduce((sum, item) => {
+    const price = marketLogic.getPrice(item.id, location.template);
+    return sum + (price / item.basePrice);
+  }, 0) / items.length;
+  const insightText = avgRatio <= 0.95 ? "🌟 Great prices here! (10% below average)" :
+                     avgRatio <= 1.05 ? "🙂 Fair market today." :
+                     "⚠️ Overpriced — try elsewhere";
+  insightEl.textContent = insightText;
+
+  // Render Items — ✅ STRUCTURE MATCHES OLD VERSION
+  const itemsToRender = gameState.fantasyData.items;
+  itemsToRender.forEach((item) => {
+    const price = marketLogic.getPrice(item.id, location.template);
+    const owned = gameState.inventory[item.id] || 0;
+    const stock = 5 + Math.floor(Math.random() * 6);
+    const dealQuality = getDealQuality(price, item.basePrice);
+
+    const slot = document.createElement("div");
+    slot.className = "item-row";
+    if (dealQuality.class === "good") slot.classList.add("good-deal");
+    if (dealQuality.class === "poor") slot.classList.add("bad-deal");
+    if (stock === 0) slot.classList.add("no-stock");
+
+    slot.dataset.itemId = item.id;
+    slot.innerHTML = `
+      <div class="item-visual">
+        <div class="item-icon">${item.emoji}</div>
+        <div class="deal-indicator ${dealQuality.class === "good" ? "deal-great" : dealQuality.class === "fair" ? "deal-fair" : "deal-poor"}">
+          ${dealQuality.label.split(" ")[0]}
+        </div>
+      </div>
+      <div class="item-info">
+        <div class="item-header">
+          ${item.name} <span class="item-price">🪙 ${price}</span>
+        </div>
+        <div class="item-meta">
+          Available: ${stock} | You own: <span class="owned-count">${owned}</span>
+          ${gameState.currentQuest && gameState.currentQuest.itemId === item.id ? "<br>Perfect for your quest!" : ""}
+          ${stock <= 2 && stock > 0 ? "<br>Limited stock - act fast!" : ""}
+          ${dealQuality.class === "poor" ? "<br>Overpriced here - try elsewhere" : ""}
+          ${dealQuality.class === "good" ? "<br>Excellent value!" : ""}
+          ${dealQuality.class === "fair" ? "<br>Standard market price" : ""}
+        </div>
+      </div>
+      <div class="buy-controls">
+        <div class="quantity-action-row">
+          <button class="quantity-btn" data-action="decrease" data-item="${item.id}">−</button>
+          <button class="btn btn-buy action-button" data-item="${item.id}">BUY 1</button>
+          <button class="quantity-btn" data-action="increase" data-item="${item.id}">+</button>
+        </div>
+        <button class="btn btn-buy action-button" data-item="${item.id}">Buy All (${stock})</button>
+      </div>
+      <div class="sell-controls">
+        <div class="quantity-action-row">
+          <button class="quantity-btn" data-action="decrease" data-item="${item.id}" style="background: var(--color-ruby); color: white;">−</button>
+          <button class="btn btn-sell action-button" data-item="${item.id}">SELL 1</button>
+          <button class="quantity-btn" data-action="increase" data-item="${item.id}" style="background: var(--color-ruby); color: white;">+</button>
+        </div>
+        <button class="btn btn-sell action-button" data-item="${item.id}">Sell All (${owned})</button>
+      </div>
+    `;
+    grid.appendChild(slot);
+  });
+
   wireTradeButtons();
   updateGlobalCounters();
 }
+
+
+
+
+
+
+
+
 
 
 
@@ -613,6 +630,18 @@ function getDealQuality(price, basePrice) {
     return { label: "Steep Price", class: "poor" };
   }
 }
+
+
+function getDealDescription(itemId, currentLocationId) {
+  if (Math.random() > 0.3) return "";
+  const otherLocations = gameState.fantasyData.tradeNodes.filter(loc => loc.id !== currentLocationId);
+  if (otherLocations.length === 0) return "";
+  const target = otherLocations[Math.floor(Math.random() * otherLocations.length)];
+  const itemName = gameState.fantasyData.items.find(i => i.id === itemId)?.name || "this item";
+  return `Perfect for your quest!`;
+}
+
+
 
 function getQuestHint(itemId, currentLocationId) {
   // 30% chance to show a quest hint
