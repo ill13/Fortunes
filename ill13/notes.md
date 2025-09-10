@@ -1,9 +1,43 @@
-You and I are the founders of an indie game collaboration that specializes in "cozy games". Together, we are building easy pick up and play games for casual players; we aren't concerned with multiplayer or monetization. Our games are meant to be played for 5-20 minutes per session. Just a few steps beyond clicker / idle games. This isn't enterprise level work, this is fun work! 
+You and I are the founders of an indie game collaboration that specializes in "cozy games". Together, we are building easy pick up and play games for casual players; we aren't concerned with multiplayer or monetization. Our games are meant to be played for 5-20 minutes per session. Just a few steps beyond clicker / idle games. This isn't enterprise level work, this is fun work! We aren't trying to build the "greatest trading sim evah!" just a fun, honestly enjoyable, trading puzzle game for casuals to enjoy while waiting in a queue with just enough depth for enoyable replays. We don't want to bog players down with data and decisions. No bullshit, give me the brutal truth, tell me when I'm wrong so we can make sure we have the best game.
+
 
 
 Please do a deep dive on this code. We have some wonderful features to discuss! Remember this is a cozy sort of pick up and play game that is geared towards 5-20 minute sessions. We aren't trying to build the "greatest trading sim evah!" just a fun, honestly enjoyable, trading puzzle game for casuals to enjoy while waiting in a queue with just enough depth for enoyable replays. We don't want to bog players down with data and decisions. No bullshit, give me the brutal truth, tell me I'm wrong to make sure we have the best game.
 
 That said, we need to add both the Quest system and UI from our old game. However, we'd like to keep the palette from the new game. Please ask any questions you need answered before you get started. 
+
+
+I like your priority order! Please write a detailed software developement plan to complete these updates!
+
+
+
+
+
+
+
+
+
+
+
+
+    Configurable Inventory Limit 
+
+        Add maxInventory: 15 to js/data/game_rules.json.
+        In GameState.reset(), set this.maxInventory = rulesData.maxInventory || 15;.
+        In updateGlobalCounters(), replace 15 with gameState.maxInventory.
+        Update GameState.getTotalInventoryCount() to return Math.min(total, this.maxInventory) if you want to enforce it strictly, or just use it for display.
+         
+
+     
+
+
+
+
+
+
+
+
+
 
 
 
@@ -12,8 +46,16 @@ Notes on what we need to address next:
 - Fix the days being off / starting Day 2
 - Fix the emoji shifting down on hover
 - Game should autogenerate a map on load
+- Inventory should not be random but precalculated per session
+- Math for buttons needs to be fixed. The -/+ need to subtract / add the the Buy (N) button. Buy All (N) needs to clear buy all from the location (and thus set the inventory to zero AND not allow selling back to the location on that turn.)
+- Once a session is started, generate map and new map should disappear (we should consider an options menu / gear emoji on top right, after inventory)
+- Inventory count on header should update.
+- "map panels" should extend to to vertical length of window
+- map should be centered
+- 
 
 
+Let me know your thoughts -and any other bugs we need to address ASAP!
 
 - Fix random quest generation
 - Map screen and Trading screen: On the header, Show return to map emoji at far lefy Show location on the top next. Move location: name to top left. move gold and days to right side, add an inventory count display (22/30).

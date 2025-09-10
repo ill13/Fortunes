@@ -16,6 +16,7 @@ class GameState {
     this.mapName = "Unnamed Realm";
     this.locationStock = {}; // locationIndex → { itemId → stock }
     this.lastLocation = null; // ✅ Track for travel time
+    this.hasVisitedLocation = false; // 👈 FLAG FOR DAY COUNTER
     this.currentQuest = null; // 🆕 ADDED
   }
 

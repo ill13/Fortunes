@@ -37,10 +37,11 @@ button:hover {
   height: 400px;
   background: #f0e6d2;
   border: 2px solid #d4c5a8;
-  margin: 1rem 0;
+  margin: 1rem auto; /* 👈 CENTER THE MAP */
   position: relative;
   overflow: hidden;
 }
+
 
 .location-overlay {
   position: absolute;
@@ -77,6 +78,7 @@ button:hover {
 
 .location-marker:hover {
   transform: scale(1.2);
+  transform-origin: center; /* 👈 ANCHOR THE SCALE */
   background: rgba(255, 255, 255, 0.5);
   z-index: 15;
 }
@@ -99,8 +101,10 @@ button:hover {
   display: flex;
   gap: 1rem;
   margin-top: 1rem;
-  height: 160px;
+  min-height: 30vh; /* 👈 USE VIEWPORT HEIGHT */
+  height: auto; /* Allow it to grow if needed */
 }
+
 
 .news-panel, .inventory-panel {
   flex: 1;

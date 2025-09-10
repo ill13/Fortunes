@@ -17,6 +17,11 @@ class MarketActions {
       }
       this.gameState.updateGold(-price);
       this.gameState.inventory[itemId] = (this.gameState.inventory[itemId] || 0) + 1;
+      this.gameState.updateStock(itemId, -1); // 👈 DECREMENT STOCK BY 1
+      console.log("buy")
+
+
+
     } else if (type === 'sell') {
       if (!(this.gameState.inventory[itemId] > 0)) return;
       this.gameState.updateGold(price);
@@ -24,7 +29,10 @@ class MarketActions {
       if (this.gameState.inventory[itemId] === 0) {
         delete this.gameState.inventory[itemId];
       }
+      this.gameState.updateStock(itemId, 1); // 👈 INCREMENT STOCK BY 1
+      console.log("sell")
     }
+    
   }
 
   changeQuantity(itemId, type, delta) {

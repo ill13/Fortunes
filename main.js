@@ -34,6 +34,7 @@ async function initializeGame() {
   gameState = new GameState(fantasyData);
   marketLogic = new MarketLogic(fantasyData.items);
   marketActions = new MarketActions(gameState, marketLogic);
+  generateNewMap(); //
 }
 
 function wireEventListeners00() {
@@ -49,7 +50,6 @@ function wireEventListeners00() {
     resetGameAndGenerateMap();
   });
 }
-
 
 function wireEventListeners() {
   // 🆕 Wire the map icon
@@ -68,42 +68,38 @@ function wireEventListeners() {
   });
 }
 
-
-
-
 // =============================================================================
 // SCENE MANAGEMENT
 // =============================================================================
 
-
 function switchToMap() {
   document.getElementById("mapScene").classList.add("active");
   document.getElementById("tradeScene").classList.remove("active");
-
-
   document.getElementById("backToMapIcon").style.display = "block";
 
-
   // ✅ Set location name to "The Map"
-    gameState.currentLocationIndex = null;
+  gameState.currentLocationIndex = null;
   document.getElementById("locationName").textContent = "The Map";
   document.getElementById("locationIcon").textContent = "🗺️";
+  if (gameState.hasVisitedLocation) {
+    gameState.day += 1;
+  }
+  gameState.hasVisitedLocation = false; // Reset for next visit
 
-  gameState.day += 1;
+  //gameState.day += 1;
   checkSeasonEnd();
   renderMapUI();
 }
 
 function switchToTrade(locationIndex) {
   gameState.setLocation(locationIndex);
+  gameState.hasVisitedLocation = true; // 👈 PLAYER HAS VISITED A LOCATION
   document.getElementById("mapScene").classList.remove("active");
   document.getElementById("tradeScene").classList.add("active");
 
   const location = gameState.getLocation();
 
-
   document.getElementById("locationIcon").style.display = "block";
-  
 
   // ✅ Set location name to current location
   document.getElementById("locationName").textContent = location.name;
@@ -120,8 +116,6 @@ function switchToTrade(locationIndex) {
     renderTradeUI();
   }
 }
-
-
 
 function checkSeasonEnd() {
   if (gameState.day > 7) {
@@ -180,6 +174,8 @@ function generateNewMap() {
   // Update UI
   document.getElementById("mapName").textContent = `${gameState.mapName} | Seed: ${SEED}`;
   renderMapUI();
+  document.getElementById("generateMapBtn").style.display = "none";
+  document.getElementById("newMapBtn").style.display = "none";
   console.log("✅ New map generated with", placedLocations.length, "locations");
 }
 
@@ -406,7 +402,8 @@ function renderTradeUI() {
   itemsToRender.forEach((item) => {
     const price = marketLogic.getPrice(item.id, location.template);
     const owned = gameState.inventory[item.id] || 0;
-    const stock = 5 + Math.floor(Math.random() * 6);
+    //const stock = 5 + Math.floor(Math.random() * 6);
+    const stock = gameState.getCurrentStock(item.id); // 👈 USE PRE-CALCULATED STOCK
     const dealQuality = getDealQuality(price, item.basePrice);
 
     const slot = document.createElement("div");
@@ -439,18 +436,18 @@ function renderTradeUI() {
       <div class="buy-controls">
         <div class="quantity-action-row">
           <button class="quantity-btn" data-action="decrease" data-item="${item.id}">−</button>
-          <button class="btn btn-buy action-button" data-item="${item.id}">BUY 1</button>
+          <button class="btn btn-buy action-button quick-buy-all" data-item="${item.id}">BUY 1</button>
           <button class="quantity-btn" data-action="increase" data-item="${item.id}">+</button>
         </div>
-        <button class="btn btn-buy action-button" data-item="${item.id}">Buy All (${stock})</button>
+        <button class="btn btn-buy action-button quick-buy-all" data-item="${item.id}">Buy All (${stock})</button>
       </div>
       <div class="sell-controls">
         <div class="quantity-action-row">
           <button class="quantity-btn" data-action="decrease" data-item="${item.id}" style="background: var(--color-ruby); color: white;">−</button>
-          <button class="btn btn-sell action-button" data-item="${item.id}">SELL 1</button>
+          <button class="btn btn-sell action-button quick-sell-all" data-item="${item.id}">SELL 1</button>
           <button class="quantity-btn" data-action="increase" data-item="${item.id}" style="background: var(--color-ruby); color: white;">+</button>
         </div>
-        <button class="btn btn-sell action-button" data-item="${item.id}">Sell All (${owned})</button>
+        <button class="btn btn-sell action-button quick-sell-all" data-item="${item.id}">Sell All (${owned})</button>
       </div>
     `;
     grid.appendChild(slot);
@@ -486,7 +483,6 @@ function createItemSlot(item, price, stock, owned, dealQuality, questHint) {
   return slot;
 }
 
-
 function updateGlobalCounters() {
   document.getElementById("goldCounter").textContent = gameState.gold;
   document.getElementById("dayCounter").textContent = gameState.day;
@@ -499,12 +495,10 @@ function updateGlobalCounters() {
     }
   } else {
     locationNameElement.textContent = "The Map";
-
   }
-  // Inventory count is handled by updateInventoryPanel()
+  // 👇 ADD THIS LINE - DO NOT FOLLOW THE COMMENT
+  document.getElementById("inventoryCount").textContent = `${gameState.getTotalInventoryCount()}/15`;
 }
-
-
 
 function showRandomNews() {
   const news = gameState.fantasyData.genericNews;
@@ -553,54 +547,63 @@ function wireTradeButtons() {
 
 function wireBasicTradeButtons() {
   document.querySelectorAll(".btn-buy").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      const itemId = e.target.dataset.item;
+  btn.addEventListener("click", (e) => {
+    const itemId = e.target.dataset.item;
+    const quantity = parseInt(e.target.dataset.quantity) || 1;
+    for (let i = 0; i < quantity; i++) {
       marketActions.executeTrade(itemId, "buy");
-      renderTradeUI();
-    });
+    }
+    renderTradeUI();
   });
+});
 
   document.querySelectorAll(".btn-sell").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      const itemId = e.target.dataset.item;
+  btn.addEventListener("click", (e) => {
+    const itemId = e.target.dataset.item;
+    const quantity = parseInt(e.target.dataset.quantity) || 1;
+    for (let i = 0; i < quantity; i++) {
       marketActions.executeTrade(itemId, "sell");
-      renderTradeUI();
-    });
+    }
+    renderTradeUI();
   });
+});
 }
 
 function wireQuickTradeButtons() {
-  document.querySelectorAll(".btn-quick-buy").forEach((btn) => {
+  document.querySelectorAll(".quick-buy-all").forEach((btn) => { // 👈 UPDATED SELECTOR
     btn.addEventListener("click", (e) => {
       const itemId = e.target.dataset.item;
-      const stock = 5 + Math.floor(Math.random() * 6); // Temporary
-      for (let i = 0; i < stock; i++) {
-        marketActions.executeTrade(itemId, "buy");
-      }
+      marketActions.quickBuyAll(itemId);
       renderTradeUI();
     });
   });
-
-  document.querySelectorAll(".btn-quick-sell").forEach((btn) => {
+  document.querySelectorAll(".quick-sell-all").forEach((btn) => { // 👈 UPDATED SELECTOR
     btn.addEventListener("click", (e) => {
       const itemId = e.target.dataset.item;
-      const owned = gameState.inventory[itemId] || 0;
-      for (let i = 0; i < owned; i++) {
-        marketActions.executeTrade(itemId, "sell");
-      }
+      marketActions.quickSellAll(itemId);
       renderTradeUI();
     });
   });
 }
 
 function wireQuantityButtons() {
-  document.querySelectorAll(".btn-quantity").forEach((btn) => {
+  document.querySelectorAll(".quantity-btn").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       const itemId = e.target.dataset.item;
       const action = e.target.dataset.action;
       const delta = action === "increase" ? 1 : -1;
-      marketActions.changeQuantity(itemId, "cart", delta);
-      console.log(`[CART] Adjust ${itemId} by ${delta}`);
+      // 👇 REPLACED: Update the text on the BUY/SELL button
+      const row = e.target.closest('.item-row');
+      const actionButton = row.querySelector('.action-button');
+      const currentText = actionButton.textContent;
+      const match = currentText.match(/(BUY|SELL) (\d+)/);
+      if (match) {
+        let currentQty = parseInt(match[2], 10);
+        currentQty = Math.max(1, currentQty + delta); // Min 1
+        actionButton.textContent = `${match[1]} ${currentQty}`;
+        // Store the quantity on the button for the executeTrade function
+        actionButton.dataset.quantity = currentQty;
+      }
     });
   });
 }
