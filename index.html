@@ -19,10 +19,17 @@
       <h1 id="mapName">🗺️ Generate Your World</h1>
       <button id="generateMapBtn">Generate Map</button>
       <button id="newMapBtn">✨ New Map</button>
-      <!-- ✅ NEW -->
       <div id="mapGrid"></div>
-      <div id="newsFeed">📰 Tap Generate to begin your journey...</div>
-      <div id="inventoryHeader">🎒 Inventory: 0 items</div>
+      <div class="map-panels">
+        <div class="news-panel">
+          <h3>📰 News & Quests</h3>
+          <div class="panel-content" id="newsPanelContent"></div>
+        </div>
+        <div class="inventory-panel">
+          <h3>🎒 Your Inventory</h3>
+          <div class="panel-content" id="inventoryPanelContent"></div>
+        </div>
+      </div>
     </div>
 
     <!-- Trade Scene -->
@@ -30,16 +37,12 @@
       <button id="backToMapBtn">← Back to Map</button>
       <h2 id="tradeLocationHeader">Trading at: ???</h2>
       <div id="travelTime">🚶 Travel Time: ? days</div>
-      <!-- ✅ NEW -->
       <div id="itemGrid">
-        <!-- Stub: will be populated by renderTradeUI() -->
         <div class="item-slot">[Item Slot]</div>
         <div class="item-slot">[Item Slot]</div>
         <div class="item-slot">[Item Slot]</div>
       </div>
     </div>
-    <!-- 
-  <script src="/js/utils/seedrandom.js"></script> -->
 
     <!-- Utils -->
     <script src="js/utils/seedrandom.js"></script>
@@ -49,14 +52,16 @@
     <script src="js/classes/MarketLogic.js"></script>
     <script src="js/classes/MarketActions.js"></script>
     <script src="js/classes/GridSystem.js"></script>
-    <!-- ✅ NEW -->
 
-    <!-- Map Gen Systems (NEW) -->
+    <!-- Map Gen Systems -->
     <script src="js/classes/WaveFunctionCollapse.js"></script>
     <script src="js/classes/MapNamer.js"></script>
     <script src="js/classes/ParchmentOverlay.js"></script>
 
-    <!-- Main App (depends on all above) -->
+    <!-- Quest System -->
+    <script src="js/classes/QuestLogic.js"></script>
+
+    <!-- Main App -->
     <script src="main.js"></script>
   </body>
 </html>

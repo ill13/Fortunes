@@ -16,7 +16,58 @@ class GameState {
     this.mapName = "Unnamed Realm";
     this.locationStock = {}; // locationIndex → { itemId → stock }
     this.lastLocation = null; // ✅ Track for travel time
+    this.currentQuest = null; // 🆕 ADDED
   }
+
+
+
+
+
+
+
+
+
+// 🆕 NEW METHODS
+setQuest(quest) {
+  this.currentQuest = quest;
+}
+
+completeQuest() {
+  this.currentQuest = null;
+}
+
+updateQuestDelivered(amount) {
+  if (this.currentQuest) {
+    this.currentQuest.delivered = (this.currentQuest.delivered || 0) + amount;
+  }
+}
+
+removeFromInventory(itemId, amount) {
+  if (this.inventory[itemId]) {
+    this.inventory[itemId] -= amount;
+    if (this.inventory[itemId] <= 0) {
+      delete this.inventory[itemId];
+    }
+  }
+}
+
+getInventoryCount(itemId) {
+  return this.inventory[itemId] || 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   // === MAP & LOCATION SETUP ===
   

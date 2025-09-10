@@ -67,13 +67,21 @@ function switchToTrade(locationIndex) {
   gameState.setLocation(locationIndex);
   document.getElementById("mapScene").classList.remove("active");
   document.getElementById("tradeScene").classList.add("active");
-
   const location = gameState.getLocation();
   document.getElementById("locationName").textContent = location.name;
   document.getElementById("tradeLocationHeader").textContent = `Trading at: ${location.name}`;
-
   updateTravelTime(location);
-  renderTradeUI();
+
+  // 🆕 AUTO-CHECK FOR QUEST DELIVERY
+  // This handles partial deliveries if the player arrives with quest items.
+  if (QuestLogic.checkQuestDelivery(gameState)) {
+    // If something was delivered, re-render both UIs to reflect changes.
+    renderTradeUI();
+    renderMapUI();
+  } else {
+    // If nothing was delivered, proceed with normal render.
+    renderTradeUI();
+  }
 }
 
 function checkSeasonEnd() {
@@ -101,34 +109,27 @@ function generateNewMap() {
   const SEED = Date.now().toString().slice(-5);
   const WIDTH = 10,
     HEIGHT = 8;
-
   // Generate terrain
   const wfc = new WaveFunctionCollapse(WIDTH, HEIGHT, gameState.fantasyData.elevation, SEED);
   wfc.collapse();
   const terrainMap = wfc.getFinalMap();
-
   // Place locations
   const placedLocations = placeLocations(terrainMap, gameState.fantasyData);
-
   // Assign array index to each location for easy reference
-placedLocations.forEach((loc, index) => {
-  loc._arrayIndex = index;
-});
-
+  placedLocations.forEach((loc, index) => {
+    loc._arrayIndex = index;
+  });
   // Update game state
   gameState.ingestWFCMap(placedLocations, SEED);
 
-  // Render map
-  // new ParchmentOverlay_OLD(
-  //   terrainMap,
-  //   placedLocations,
-  //   document.getElementById('mapGrid'),
-  //   gameState.fantasyData
-  // );
+  // 🆕 GENERATE THE FIRST QUEST
+  // We generate it for location index 0 (The Commons) on Day 1.
+  const firstQuest = QuestLogic.generateQuest(gameState, 0, gameState.mapSeed, 1);
+  gameState.setQuest(firstQuest);
 
+  // Render map
   // Clear previous canvases (optional, but safe)
   document.querySelectorAll("#mapGrid > canvas").forEach((c) => c.remove());
-
   // Create and render painterly map
   const overlay = new ParchmentOverlay(WIDTH, HEIGHT, gameState.fantasyData.themeName || "default", SEED);
   overlay.initFromTheme(gameState.fantasyData);
@@ -137,15 +138,11 @@ placedLocations.forEach((loc, index) => {
   document.getElementById("mapGrid").appendChild(canvas);
   overlay.render();
   renderLocationsOnMap(placedLocations); // 👈 DOM markers on top
-
   // Update UI
   document.getElementById("mapName").textContent = `🗺️ ${gameState.mapName} | Seed: ${SEED}`;
   renderMapUI();
-
   console.log("✅ New map generated with", placedLocations.length, "locations");
 }
-
-
 
 
 
@@ -228,6 +225,79 @@ function renderLocationsOnMap(locations) {
 }
 
 
+// 🆕 REPLACE showRandomNews()
+function updateNewsPanel() {
+  const content = document.getElementById('newsPanelContent');
+  content.innerHTML = '';
+  const news = [...gameState.fantasyData.genericNews];
+  // Add Quest if active
+  if (gameState.currentQuest) {
+    const quest = gameState.currentQuest;
+    const targetLoc = gameState.locations[quest.toIndex];
+    const questEl = document.createElement('div');
+    questEl.className = 'quest-item';
+    questEl.innerHTML = `
+      📋 <strong>${quest.itemName}</strong> x${quest.required} for ${targetLoc.name}
+      <br><small>→ Reward: 🪙 ${quest.reward}</small>
+    `;
+    questEl.addEventListener('click', () => {
+      switchToTrade(quest.toIndex);
+    });
+    content.appendChild(questEl);
+    news.push(`✨ New quest available! Deliver ${quest.itemName} to ${targetLoc.name}.`);
+  }
+  // Add 1-2 random news
+  const randomNews = news.sort(() => 0.5 - Math.random()).slice(0, 2);
+  randomNews.forEach(text => {
+    const item = document.createElement('div');
+    item.className = 'news-item';
+    item.textContent = text;
+    content.appendChild(item);
+  });
+}
+
+// 🆕 NEW FUNCTION
+function updateInventoryPanel() {
+  const content = document.getElementById('inventoryPanelContent');
+  content.innerHTML = '';
+  const items = gameState.fantasyData.items;
+  const inventory = gameState.inventory;
+  let hasItems = false;
+  items.forEach(item => {
+    const count = inventory[item.id] || 0;
+    if (count > 0) {
+      hasItems = true;
+      const itemEl = document.createElement('div');
+      itemEl.className = 'inventory-item';
+      itemEl.innerHTML = `
+        <span class="inventory-item-icon">${item.emoji}</span>
+        <span>${item.name}: ${count}</span>
+      `;
+      content.appendChild(itemEl);
+    }
+  });
+  if (!hasItems) {
+    content.innerHTML = '<div class="news-item">Your pack is light. Go buy something!</div>';
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -281,42 +351,122 @@ function isValidLocationPlacement(wfcMap, template, x, y, width, height) {
 // =============================================================================
 // UI RENDERING
 // =============================================================================
+// 🆕 UPDATE renderMapUI
 function renderMapUI() {
   updateGlobalCounters();
-  showRandomNews();
+  updateNewsPanel(); // 👈 Updated
+  updateInventoryPanel(); // 👈 New
   highlightCurrentLocation();
 }
+
+
+
+
 
 function renderTradeUI() {
   const grid = document.getElementById("itemGrid");
   grid.innerHTML = "";
-
   const location = gameState.getLocation();
   if (!location || !location.template) {
     grid.innerHTML = `<div class="item-slot">No location loaded</div>`;
     return;
   }
 
-  renderItemSlots(grid, location);
+  // 🆕 Add Quest Banner
+  const bannerContainer = document.createElement('div');
+  bannerContainer.id = 'questBanner';
+  bannerContainer.style.margin = '1rem 0';
+  bannerContainer.style.padding = '0.75rem';
+  bannerContainer.style.borderRadius = '6px';
+  bannerContainer.style.display = 'none';
+  document.querySelector('#tradeScene h2').after(bannerContainer);
+
+  // 🆕 Add Market Insight
+  const insightEl = document.createElement('div');
+  insightEl.id = 'marketInsight';
+  insightEl.style.fontSize = '0.9rem';
+  insightEl.style.color = '#555';
+  insightEl.style.marginBottom = '1rem';
+  document.querySelector('#tradeScene h2').after(insightEl);
+
+  // Calculate Market Insight
+  const items = gameState.fantasyData.items;
+  const avgRatio = items.reduce((sum, item) => {
+    const price = marketLogic.getPrice(item.id, location.template);
+    return sum + (price / item.basePrice);
+  }, 0) / items.length;
+  const insightText = avgRatio <= 0.95 ? "🌟 Great deals here! (Below avg)" :
+                     avgRatio <= 1.05 ? "🙂 Fair market today." :
+                     "⚠️ Prices are steep. Shop wisely.";
+  insightEl.textContent = insightText;
+
+  // 🆕 INLINE renderItemSlots LOGIC HERE
+  const itemsToRender = gameState.fantasyData.items;
+  itemsToRender.forEach((item) => {
+    const price = marketLogic.getPrice(item.id, location.template);
+    const owned = gameState.inventory[item.id] || 0;
+    const stock = 5 + Math.floor(Math.random() * 6); // Temporary stock logic
+    const dealQuality = getDealQuality(price, item.basePrice);
+
+    const slot = document.createElement("div");
+    slot.className = "item-slot";
+    slot.dataset.itemId = item.id;
+    slot.innerHTML = `
+      <div class="item-emoji">${item.emoji}</div>
+      <div class="item-name">${item.name}</div>
+      <div class="item-price">🪙 ${price} <span class="deal-badge ${dealQuality.class}">${dealQuality.label}</span></div>
+      <div class="item-stock">📦 Stock: ${stock}</div>
+      <div class="item-owned">🎒 Yours: ${owned}</div>
+      <div class="item-controls">
+        <button class="btn-quantity" data-action="decrease" data-item="${item.id}">−</button>
+        <button class="btn-buy" data-item="${item.id}">Buy 1</button>
+        <button class="btn-sell" data-item="${item.id}">Sell 1</button>
+        <button class="btn-quantity" data-action="increase" data-item="${item.id}">+</button>
+        <br>
+        <button class="btn-quick-buy" data-item="${item.id}">Buy All</button>
+        <button class="btn-quick-sell" data-item="${item.id}">Sell All</button>
+      </div>
+    `;
+    grid.appendChild(slot);
+  });
+
+  // 🆕 Handle Quest Banner
+  if (QuestLogic.updateNewsUI(gameState)) {
+    const quest = gameState.currentQuest;
+    const item = gameState.fantasyData.items.find(i => i.id === quest.itemId);
+    const delivered = quest.delivered || 0;
+    const remaining = quest.required - delivered;
+    bannerContainer.style.display = 'block';
+    bannerContainer.style.background = 'var(--color-quest-bg)';
+    bannerContainer.style.border = '2px solid var(--color-quest-border)';
+    bannerContainer.innerHTML = `
+      <strong>📋 QUEST: Deliver ${item.name}</strong><br>
+      Required: ${quest.required} | Delivered: ${delivered} | Remaining: ${remaining}<br>
+      Reward: 🪙 ${quest.reward}<br>
+      <button id="deliverQuestBtn" style="margin-top: 0.5rem; background: var(--color-emerald);">✅ Deliver Now</button>
+    `;
+    document.getElementById('deliverQuestBtn').addEventListener('click', () => {
+      if (QuestLogic.deliverQuest(gameState)) {
+        alert(`🎉 Quest Complete! You earned 🪙 ${quest.reward}`);
+        // Generate new quest
+        const newQuest = QuestLogic.generateQuest(gameState, gameState.currentLocationIndex, gameState.mapSeed, gameState.day);
+        gameState.setQuest(newQuest);
+      }
+      renderTradeUI();
+      renderMapUI();
+    });
+  }
+
+  // Wire up all buttons
   wireTradeButtons();
   updateGlobalCounters();
 }
 
-function renderItemSlots(grid, location) {
-  const items = gameState.fantasyData.items;
 
-  items.forEach((item) => {
-    const price = marketLogic.getPrice(item.id, location.template);
-    const owned = gameState.inventory[item.id] || 0;
-    const stock = 5 + Math.floor(Math.random() * 6); // Temporary
 
-    const dealQuality = getDealQuality(price, item.basePrice);
-    const questHint = getQuestHint(item.id, location.id);
 
-    const slot = createItemSlot(item, price, stock, owned, dealQuality, questHint);
-    grid.appendChild(slot);
-  });
-}
+
+
 
 function createItemSlot(item, price, stock, owned, dealQuality, questHint) {
   const slot = document.createElement("div");
@@ -347,7 +497,7 @@ function createItemSlot(item, price, stock, owned, dealQuality, questHint) {
 function updateGlobalCounters() {
   document.getElementById("goldCounter").textContent = gameState.gold;
   document.getElementById("dayCounter").textContent = gameState.day;
-  document.getElementById("inventoryHeader").textContent = `🎒 Inventory: ${gameState.getTotalInventoryCount()} items`;
+  // Inventory count is now handled by updateInventoryPanel(), not a global header.
 }
 
 function showRandomNews() {
