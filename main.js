@@ -34,34 +34,25 @@ async function initializeGame() {
   gameState = new GameState(fantasyData);
   marketLogic = new MarketLogic(fantasyData.items);
   marketActions = new MarketActions(gameState, marketLogic);
-  generateNewMap(); //
+  // 🆕 CREATE MAP MANAGER
+  const mapManager = new MapManager(gameState, fantasyData);
+  window.mapManager = mapManager; // Make it globally accessible for now
+  window.mapManager.generateNewMap();
+
+  //generateNewMap(); //
 }
 
-function wireEventListeners00() {
-  document.getElementById("backToMapBtn").addEventListener("click", () => {
-    switchToMap();
-  });
 
-  document.getElementById("generateMapBtn").addEventListener("click", () => {
-    generateNewMap();
-  });
-
-  document.getElementById("newMapBtn").addEventListener("click", () => {
-    resetGameAndGenerateMap();
-  });
-}
 
 function wireEventListeners() {
   // 🆕 Wire the map icon
   document.getElementById("backToMapIcon").addEventListener("click", () => {
     switchToMap();
   });
-
   // Wire the generate map button
   document.getElementById("generateMapBtn").addEventListener("click", () => {
-    generateNewMap();
+    window.mapManager.generateNewMap(); // 👈 Use the new manager
   });
-
   // Wire the new map button
   document.getElementById("newMapBtn").addEventListener("click", () => {
     resetGameAndGenerateMap();
@@ -144,161 +135,17 @@ function updateTravelTime(location) {
   document.getElementById("travelTime").textContent = `🚶 Travel Time: ${travelTime} day${travelTime !== 1 ? "s" : ""}`;
 }
 
-// =============================================================================
-// MAP GENERATION & MANAGEMENT
-// =============================================================================
-
-function generateNewMap() {
-  const SEED = Date.now().toString().slice(-5);
-  const WIDTH = 15,
-    HEIGHT = 8;
-
-  // 🚧 PHASE 2: Generate location layout FIRST
-  const { locations, locationGrid } = generateLocationLayout(WIDTH, HEIGHT, gameState.fantasyData, SEED);
-
-  // Assign array index to each location for easy reference
-  locations.forEach((loc, index) => {
-    loc._arrayIndex = index;
-  });
-
-  // Pick the central location
-  const centralLocation = pickCentralLocation(locations, WIDTH, HEIGHT);
-  console.log("🗺️ Central Location:", centralLocation.name); // For debugging
-
-  // 🚧 PHASE 3: Generate roads using A*
-  // Create a set of obstacle tiles (all placed locations) for A*
-  const locationObstacles = new Set();
-  locations.forEach((loc) => locationObstacles.add(`${loc.x},${loc.y}`));
-
-  // Initialize a set to store all road tiles
-  const roadTiles = new Set(); // Will store strings like "x,y"
-
-  // For each location (except the central one), find a path from the central hub
-  for (const targetLocation of locations) {
-    if (targetLocation === centralLocation) continue; // Skip the central location itself
-
-    // ✅ FIX: Temporarily remove START and END points from obstacles for this path
-    const startKey = `${centralLocation.x},${centralLocation.y}`;
-    const endKey = `${targetLocation.x},${targetLocation.y}`;
-
-    // Remove start and end from a COPY of the obstacle set
-    const pathObstacles = new Set(locationObstacles);
-    pathObstacles.delete(startKey);
-    pathObstacles.delete(endKey);
-
-    const path = GridSystem.findPath(
-      { x: centralLocation.x, y: centralLocation.y }, // Start
-      { x: targetLocation.x, y: targetLocation.y }, // End
-      pathObstacles // Obstacles (without start/end)
-    );
-
-    // If a path is found, add all its points to the roadTiles set
-    if (path) {
-      path.forEach((point) => {
-        roadTiles.add(`${point.x},${point.y}`);
-      });
-    } else {
-      console.warn(`⚠️ No path found from ${centralLocation.name} to ${targetLocation.name}`);
-    }
-  }
-
-  // Log the roads for debugging
-  console.log("🛣️ Generated Roads - Tile Count:", roadTiles.size);
-
-  // 🚧 PHASE 4: Create fixed locations for WFC
-  // This tells the WFC: "These tiles MUST be 'meadow'"
-  const fixedLocations = [];
-
-  // Add the trade locations themselves (force them to be 'meadow')
-  locations.forEach((loc) => {
-    fixedLocations.push({ x: loc.x, y: loc.y, terrainType: "road" });
-  });
-
-  // Add the road tiles (also force them to be 'meadow')
-  roadTiles.forEach((tileKey) => {
-    const [x, y] = tileKey.split(",").map(Number);
-    fixedLocations.push({ x, y, terrainType: "road" });
-    // console.log(x,y)
-  });
-
-  // Log for debugging
-  console.log("🧱 Fixed Locations for WFC:", fixedLocations.length);
-
-  // 🚧 PHASE 4: Generate terrain WITH constraints
-  const wfc = new WaveFunctionCollapse(WIDTH, HEIGHT, gameState.fantasyData.elevation, SEED, { fixedLocations });
-  wfc.collapse();
-  const terrainMap = wfc.getFinalMap();
-  console.log("🗺️ Generated Terrain Map:", terrainMap);
-
-  // 🚧 PHASE 5: Pre-calculate travel cost between EVERY pair of locations
-  const locationPaths = {};
-
-  for (let i = 0; i < locations.length; i++) {
-    for (let j = 0; j < locations.length; j++) {
-      if (i === j) {
-        locationPaths[gameState._getPathKey(i, j)] = 0; // Cost to same location is 0
-        continue;
-      }
-
-      // Create a clean obstacle set for this specific path (excluding start and end)
-      const startKey = `${locations[i].x},${locations[i].y}`;
-      const endKey = `${locations[j].x},${locations[j].y}`;
-      const pathObstacles = new Set(locationObstacles);
-      pathObstacles.delete(startKey);
-      pathObstacles.delete(endKey);
-
-      // Find the path
-      const path = GridSystem.findPath({ x: locations[i].x, y: locations[i].y }, { x: locations[j].x, y: locations[j].y }, pathObstacles);
-
-      // Store the path length (number of tiles/edges). If no path, use a high number.
-      // Path length - 1 because the path array includes both start and end points.
-      locationPaths[gameState._getPathKey(i, j)] = path ? path.length - 1 : 999;
-    }
-  }
-
-  // Log for debugging
-  console.log("🧭 Pre-calculated Paths:", Object.keys(locationPaths).length);
-
-  // Update game state — this sets gameState.mapSeed and gameState.mapName
-  //gameState.ingestWFCMap(locations, SEED);
-  gameState.ingestWFCMap(locations, SEED, locationPaths);
-
-  // 🆕 GENERATE THE FIRST QUEST
-  // ✅ FIXED: Use local SEED here, NOT gameState.mapSeed
-  const firstQuest = QuestLogic.generateQuest(gameState, 0, SEED, 1);
-  gameState.setQuest(firstQuest);
-
-  // Render map
-  // Clear previous canvases (optional, but safe)
-  document.querySelectorAll("#mapGrid > canvas").forEach((c) => c.remove());
-
-  // 🚫 PHASE 0: DISABLED FOR TESTING - Parchment Overlay
-  // const overlay = new ParchmentOverlay(WIDTH, HEIGHT, gameState.fantasyData.themeName || "default", SEED);
-  // overlay.initFromTheme(gameState.fantasyData);
-  // overlay.setMapData(terrainMap);
-  // const canvas = overlay.createCanvas();
-  // document.getElementById("mapGrid").appendChild(canvas);
-  // overlay.render();
-
-// 🎨 Render simple colored grid
-renderSimpleTerrainMap(terrainMap, gameState.fantasyData, WIDTH, HEIGHT);
-
-  renderLocationsOnMap(locations); // 👈 DOM markers on top
-
-  // Update UI
-  document.getElementById("mapName").textContent = `${gameState.mapName} | Seed: ${SEED}`;
-  renderMapUI();
-  document.getElementById("generateMapBtn").style.display = "none";
-  document.getElementById("newMapBtn").style.display = "none";
-  console.log("✅ New map generated with", locations.length, "locations");
-}
 
 function resetGameAndGenerateMap() {
   gameState.reset();
   document.getElementById("mapGrid").innerHTML = "";
-  generateNewMap();
+  window.mapManager.generateNewMap(); // 👈 Use the new manager
   document.getElementById("newsFeed").textContent = "📰 A new journey begins...";
 }
+
+
+
+
 
 function placeLocations(wfcMap, fantasyData) {
   const height = wfcMap.length;
@@ -382,109 +229,6 @@ function renderSimpleTerrainMap(terrainMap, fantasyData, width, height) {
 }
 
 
-
-// --- MAP LAYOUT GENERATION ---
-
-/**
- * Generates the initial layout of location markers on an empty grid.
- * Ignores terrain rules for placement for MVP, focusing on spatial distribution.
- * @param {number} width - Grid width
- * @param {number} height - Grid height
- * @param {Object} fantasyData - Game data
- * @param {string} seed - Random seed
- * @returns {Object} - { locations: Array, locationGrid: 2D Array }
- */
-function generateLocationLayout(width, height, fantasyData, seed) {
-  Math.seedrandom(seed);
-  const locationGrid = Array.from({ length: height }, () => Array(width).fill(null));
-  const locations = [];
-  const availableLocations = [...fantasyData.tradeNodes];
-  availableLocations.sort(() => Math.random() - 0.5);
-
-  const maxLocations = Math.min(8, Math.floor((width + height) / 4));
-
-  for (const template of availableLocations) {
-    if (locations.length >= maxLocations) break;
-    const validPosition = findValidLocationForLayout(locationGrid, template, width, height);
-    if (validPosition) {
-      const newLocation = { ...template, x: validPosition.x, y: validPosition.y };
-      locations.push(newLocation);
-      locationGrid[validPosition.y][validPosition.x] = newLocation; // Mark the tile as occupied
-    }
-  }
-
-  return { locations, locationGrid };
-}
-
-/**
- * Finds a valid position for a location on the layout grid.
- * For MVP, only checks for collision with other locations and enforces a minimum distance.
- * @param {Array} locationGrid - 2D grid tracking placed locations
- * @param {Object} template - Location template
- * @param {number} width - Grid width
- * @param {number} height - Grid height
- * @returns {Object|null} - {x, y} or null
- */
-function findValidLocationForLayout(locationGrid, template, width, height) {
-  const candidates = [];
-
-  // Define a minimum distance (in tiles) from other locations
-  const MIN_DISTANCE = 3;
-
-  for (let y = 1; y < height - 1; y++) {
-    // Avoid very edges for better pathfinding
-    for (let x = 1; x < width - 1; x++) {
-      if (locationGrid[y][x] !== null) continue; // Skip if tile is occupied
-
-      // Check minimum distance from all other placed locations
-      let tooClose = false;
-      outerLoop: for (let dy = -MIN_DISTANCE; dy <= MIN_DISTANCE; dy++) {
-        for (let dx = -MIN_DISTANCE; dx <= MIN_DISTANCE; dx++) {
-          const nx = x + dx;
-          const ny = y + dy;
-          if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
-            if (locationGrid[ny][nx] !== null) {
-              tooClose = true;
-              break outerLoop; // Break out of both loops
-            }
-          }
-        }
-      }
-
-      if (!tooClose) {
-        candidates.push({ x, y });
-      }
-    }
-  }
-
-  return candidates.length > 0 ? candidates[Math.floor(Math.random() * candidates.length)] : null;
-}
-
-/**
- * Picks the location closest to the geometric center of the map.
- * @param {Array} locations - Array of location objects
- * @param {number} width - Grid width
- * @param {number} height - Grid height
- * @returns {Object} - The central location object
- */
-function pickCentralLocation(locations, width, height) {
-  const centerX = width / 2;
-  const centerY = height / 2;
-
-  let centralLocation = locations[0];
-  let minDistance = Infinity;
-
-  for (const loc of locations) {
-    // Use Manhattan distance for simplicity
-    const distance = Math.abs(loc.x - centerX) + Math.abs(loc.y - centerY);
-    if (distance < minDistance) {
-      minDistance = distance;
-      centralLocation = loc;
-    }
-  }
-
-  return centralLocation;
-}
 
 function renderLocationsOnMap(locations) {
   const mapGrid = document.getElementById("mapGrid");
