@@ -18,13 +18,17 @@ class GameState {
     this.lastLocation = null; // ✅ Track for travel time
     this.hasVisitedLocation = false; // 👈 FLAG FOR DAY COUNTER
     this.currentQuest = null; // 🆕 ADDED
+    this.locationPaths = {}; // 🚧 PHASE 5: { "fromIndex-toIndex": costInTiles}
   }
 
 
 
 
 
-
+// Add this anywhere in the class, perhaps near other helper methods
+_getPathKey(fromIndex, toIndex) {
+    return `${fromIndex}-${toIndex}`;
+}
 
 
 
@@ -72,20 +76,19 @@ getInventoryCount(itemId) {
 
   // === MAP & LOCATION SETUP ===
   
-  // ✅ UPDATED: Uses tradeNodes instead of locationTemplates
-  ingestWFCMap(placements, seed) {
+ingestWFCMap(placements, seed, locationPaths = {}) { // ✅ Accept the 3rd parameter
     this.locations = placements.map(p => ({
       id: p.id,
       name: p.name,
       emoji: p.emoji,
       x: p.x,
       y: p.y,
-      // ✅ Look up from tradeNodes — which now contains ALL trade location data
       template: this.fantasyData.tradeNodes.find(t => t.id === p.id)
     }));
     this.mapSeed = seed;
     this.mapName = new MapNamer().generate(seed);
-  }
+    this.locationPaths = locationPaths; // ✅ Correctly assign the passed-in object
+}
 
   // === LOCATION MANAGEMENT ===
   

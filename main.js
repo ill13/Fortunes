@@ -127,11 +127,20 @@ function checkSeasonEnd() {
 }
 
 function updateTravelTime(location) {
-  let travelTime = 1; // default
-  if (gameState.lastLocation) {
-    travelTime = GridSystem.getGridDistance(gameState.lastLocation, location);
+  let travelTime = 1; // default fallback
+  if (gameState.lastLocationIndex !== undefined && gameState.currentLocationIndex !== null) {
+    // Get the pre-calculated tile distance
+    const pathKey = gameState._getPathKey(gameState.lastLocationIndex, gameState.currentLocationIndex);
+    const tileDistance = gameState.locationPaths[pathKey] || 999;
+
+    // ✅ Each tile takes 1/4 of a day to travel
+    travelTime = Math.ceil(tileDistance * 0.25);
   }
-  gameState.lastLocation = { x: location.x, y: location.y };
+
+  // Update the last location index for the next move
+  gameState.lastLocationIndex = gameState.currentLocationIndex;
+
+  // Update the UI
   document.getElementById("travelTime").textContent = `🚶 Travel Time: ${travelTime} day${travelTime !== 1 ? "s" : ""}`;
 }
 
@@ -209,7 +218,7 @@ function generateNewMap() {
   roadTiles.forEach((tileKey) => {
     const [x, y] = tileKey.split(",").map(Number);
     fixedLocations.push({ x, y, terrainType: "meadow" });
-   // console.log(x,y)
+    // console.log(x,y)
   });
 
   // Log for debugging
@@ -221,8 +230,38 @@ function generateNewMap() {
   const terrainMap = wfc.getFinalMap();
   console.log("🗺️ Generated Terrain Map:", terrainMap);
 
+  // 🚧 PHASE 5: Pre-calculate travel cost between EVERY pair of locations
+  const locationPaths = {};
+
+  for (let i = 0; i < locations.length; i++) {
+    for (let j = 0; j < locations.length; j++) {
+      if (i === j) {
+        locationPaths[gameState._getPathKey(i, j)] = 0; // Cost to same location is 0
+        continue;
+      }
+
+      // Create a clean obstacle set for this specific path (excluding start and end)
+      const startKey = `${locations[i].x},${locations[i].y}`;
+      const endKey = `${locations[j].x},${locations[j].y}`;
+      const pathObstacles = new Set(locationObstacles);
+      pathObstacles.delete(startKey);
+      pathObstacles.delete(endKey);
+
+      // Find the path
+      const path = GridSystem.findPath({ x: locations[i].x, y: locations[i].y }, { x: locations[j].x, y: locations[j].y }, pathObstacles);
+
+      // Store the path length (number of tiles/edges). If no path, use a high number.
+      // Path length - 1 because the path array includes both start and end points.
+      locationPaths[gameState._getPathKey(i, j)] = path ? path.length - 1 : 999;
+    }
+  }
+
+  // Log for debugging
+  console.log("🧭 Pre-calculated Paths:", Object.keys(locationPaths).length);
+
   // Update game state — this sets gameState.mapSeed and gameState.mapName
-  gameState.ingestWFCMap(locations, SEED);
+  //gameState.ingestWFCMap(locations, SEED);
+  gameState.ingestWFCMap(locations, SEED, locationPaths);
 
   // 🆕 GENERATE THE FIRST QUEST
   // ✅ FIXED: Use local SEED here, NOT gameState.mapSeed
@@ -240,6 +279,9 @@ function generateNewMap() {
   // const canvas = overlay.createCanvas();
   // document.getElementById("mapGrid").appendChild(canvas);
   // overlay.render();
+
+// 🎨 Render simple colored grid
+renderSimpleTerrainMap(terrainMap, gameState.fantasyData, WIDTH, HEIGHT);
 
   renderLocationsOnMap(locations); // 👈 DOM markers on top
 
@@ -286,6 +328,60 @@ function placeLocations(wfcMap, fantasyData) {
 
   return locations;
 }
+
+
+/**
+ * Renders a simple colored grid based on the terrainMap.
+ * Uses the base color from the fantasy.json elevation data.
+ * @param {Array} terrainMap - 2D array of terrain type strings
+ * @param {Object} fantasyData - Game data containing elevation rules
+ * @param {number} width - Grid width
+ * @param {number} height - Grid height
+ */
+function renderSimpleTerrainMap(terrainMap, fantasyData, width, height) {
+    const mapGrid = document.getElementById("mapGrid");
+    const tileSize = 48; // Fixed tile size for simplicity
+
+    // Clear any existing canvas
+    const existingCanvas = mapGrid.querySelector('canvas');
+    if (existingCanvas) {
+        existingCanvas.remove();
+    }
+
+    // Create a new canvas
+    const canvas = document.createElement("canvas");
+    canvas.width = width * tileSize;
+    canvas.height = height * tileSize;
+    canvas.style.position = "absolute";
+    canvas.style.top = "0";
+    canvas.style.left = "0";
+    canvas.style.zIndex = "0";
+
+    const ctx = canvas.getContext("2d");
+
+    // Get base colors from fantasyData
+    const elevation = fantasyData.elevation;
+
+    // Draw each tile
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            const terrainType = terrainMap[y][x];
+            const color = elevation[terrainType]?.colors?.[0] || "#cccccc"; // Fallback to gray
+
+            ctx.fillStyle = color;
+            ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
+
+            // Optional: Draw a subtle grid line
+            ctx.strokeStyle = "#ffffff44";
+            ctx.lineWidth = 0.5;
+            ctx.strokeRect(x * tileSize, y * tileSize, tileSize, tileSize);
+        }
+    }
+
+    mapGrid.appendChild(canvas);
+}
+
+
 
 // --- MAP LAYOUT GENERATION ---
 
