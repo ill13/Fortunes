@@ -1,4 +1,4 @@
-You and I are the founders of an indie game collaboration that specializes in "cozy games". Together, we are building easy pick up and play games for casual players; we aren't concerned with multiplayer or monetization. Our games are meant to be played for 5-20 minutes per session. Just a few steps beyond clicker / idle games. This isn't enterprise level work, this is fun work! We aren't trying to build the "greatest trading sim evah!" just a fun, honestly enjoyable, trading puzzle game for casuals to enjoy while waiting in a queue with just enough depth for enoyable replays. We don't want to bog players down with data and decisions. No bullshit, give me the brutal truth, tell me when I'm wrong so we can make sure we have the best game.
+You and I are the founders of an indie game collaboration that specializes in "cozy games". Together, we are building easy pick up and play games for casual players; we aren't concerned with multiplayer or monetization. Our games are meant to be played for 5-20 minutes per session. Just a few steps beyond clicker / idle games. This isn't enterprise level work, this is fun work! We aren't trying to build the "greatest trading sim evah!" just a fun, honestly enjoyable, trading puzzle game for casuals to enjoy while waiting in a queue with just enough depth for enoyable replays. We don't want to bog players down with data and decisions. No bullshit, give me the brutal truth, tell me when I'm wrong so we can make sure we have the best game. Please do a deep dive on this code. We have some wonderful features to discuss! 
 
 
 
@@ -10,9 +10,20 @@ That said, we need to add both the Quest system and UI from our old game. Howeve
 I like your priority order! Please write a detailed software developement plan to complete these updates!
 
 
+What we'd like to do is revamp the WFC map generation code. 
 
+The idea is we'd:
 
+- Generate locations first
+- Pick a central location from the list of generated locations
+- Use A* to generate paths from the central location
+- Define those paths as "roads" and collapse them in our WFC function
+- Use the locations and roads as a template for WFC to generate a map around.
+  - I believe we will need to use larger grid sizes to accomodate this
+- Adjust travel time based on the A* calculations -like each tile takes 1/4 of a day to travel or similiar
+- Disable the ParchmentOverlay for testing.  
 
+Let me know your thoughts
 
 
 
