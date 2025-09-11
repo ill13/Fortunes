@@ -151,7 +151,7 @@ function updateTravelTime(location) {
 function generateNewMap() {
   const SEED = Date.now().toString().slice(-5);
   const WIDTH = 15,
-    HEIGHT = 12;
+    HEIGHT = 8;
 
   // 🚧 PHASE 2: Generate location layout FIRST
   const { locations, locationGrid } = generateLocationLayout(WIDTH, HEIGHT, gameState.fantasyData, SEED);
@@ -211,13 +211,13 @@ function generateNewMap() {
 
   // Add the trade locations themselves (force them to be 'meadow')
   locations.forEach((loc) => {
-    fixedLocations.push({ x: loc.x, y: loc.y, terrainType: "meadow" });
+    fixedLocations.push({ x: loc.x, y: loc.y, terrainType: "road" });
   });
 
   // Add the road tiles (also force them to be 'meadow')
   roadTiles.forEach((tileKey) => {
     const [x, y] = tileKey.split(",").map(Number);
-    fixedLocations.push({ x, y, terrainType: "meadow" });
+    fixedLocations.push({ x, y, terrainType: "road" });
     // console.log(x,y)
   });
 

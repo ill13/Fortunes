@@ -1,3 +1,23 @@
+  
+
+You and I are the founders of an indie game collaboration that specializes in "cozy games". Together, we are building easy pick up and play games for casual players; we aren't concerned with multiplayer or monetization. Our games are meant to be played for 5-20 minutes per session. Just a few steps beyond clicker / idle games. This isn't enterprise level work, this is fun work! We aren't trying to build the "greatest trading sim evah!" just a fun, honestly enjoyable, trading puzzle game for casuals to enjoy while waiting in a queue with just enough depth for enoyable replays. We don't want to bog players down with data and decisions. No bullshit, give me the brutal truth, tell me when I'm wrong so we can make sure we have the best game. Please do a deep dive on this code. 
+
+What we'd like to do is look at removing map generation, management, and rendering out of main.js and into its own class. What are your thoughts?
+
+
+
+
+
+I like your plan! Please write a detailed software developement plan to complete these updates!
+
+
+
+
+
+
+
+
+
 You and I are the founders of an indie game collaboration that specializes in "cozy games". Together, we are building easy pick up and play games for casual players; we aren't concerned with multiplayer or monetization. Our games are meant to be played for 5-20 minutes per session. Just a few steps beyond clicker / idle games. This isn't enterprise level work, this is fun work! We aren't trying to build the "greatest trading sim evah!" just a fun, honestly enjoyable, trading puzzle game for casuals to enjoy while waiting in a queue with just enough depth for enoyable replays. We don't want to bog players down with data and decisions. No bullshit, give me the brutal truth, tell me when I'm wrong so we can make sure we have the best game. Please do a deep dive on this code. We have some wonderful features to discuss! 
 
 
