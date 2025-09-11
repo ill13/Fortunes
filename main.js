@@ -138,45 +138,117 @@ function updateTravelTime(location) {
 // =============================================================================
 // MAP GENERATION & MANAGEMENT
 // =============================================================================
+
 function generateNewMap() {
   const SEED = Date.now().toString().slice(-5);
-  const WIDTH = 10,
-    HEIGHT = 8;
-  // Generate terrain
-  const wfc = new WaveFunctionCollapse(WIDTH, HEIGHT, gameState.fantasyData.elevation, SEED);
-  wfc.collapse();
-  const terrainMap = wfc.getFinalMap();
-  // Place locations
-  const placedLocations = placeLocations(terrainMap, gameState.fantasyData);
+  const WIDTH = 15,
+    HEIGHT = 12;
+
+  // 🚧 PHASE 2: Generate location layout FIRST
+  const { locations, locationGrid } = generateLocationLayout(WIDTH, HEIGHT, gameState.fantasyData, SEED);
+
   // Assign array index to each location for easy reference
-  placedLocations.forEach((loc, index) => {
+  locations.forEach((loc, index) => {
     loc._arrayIndex = index;
   });
-  // Update game state
-  gameState.ingestWFCMap(placedLocations, SEED);
+
+  // Pick the central location
+  const centralLocation = pickCentralLocation(locations, WIDTH, HEIGHT);
+  console.log("🗺️ Central Location:", centralLocation.name); // For debugging
+
+  // 🚧 PHASE 3: Generate roads using A*
+  // Create a set of obstacle tiles (all placed locations) for A*
+  const locationObstacles = new Set();
+  locations.forEach((loc) => locationObstacles.add(`${loc.x},${loc.y}`));
+
+  // Initialize a set to store all road tiles
+  const roadTiles = new Set(); // Will store strings like "x,y"
+
+  // For each location (except the central one), find a path from the central hub
+  for (const targetLocation of locations) {
+    if (targetLocation === centralLocation) continue; // Skip the central location itself
+
+    // ✅ FIX: Temporarily remove START and END points from obstacles for this path
+    const startKey = `${centralLocation.x},${centralLocation.y}`;
+    const endKey = `${targetLocation.x},${targetLocation.y}`;
+
+    // Remove start and end from a COPY of the obstacle set
+    const pathObstacles = new Set(locationObstacles);
+    pathObstacles.delete(startKey);
+    pathObstacles.delete(endKey);
+
+    const path = GridSystem.findPath(
+      { x: centralLocation.x, y: centralLocation.y }, // Start
+      { x: targetLocation.x, y: targetLocation.y }, // End
+      pathObstacles // Obstacles (without start/end)
+    );
+
+    // If a path is found, add all its points to the roadTiles set
+    if (path) {
+      path.forEach((point) => {
+        roadTiles.add(`${point.x},${point.y}`);
+      });
+    } else {
+      console.warn(`⚠️ No path found from ${centralLocation.name} to ${targetLocation.name}`);
+    }
+  }
+
+  // Log the roads for debugging
+  console.log("🛣️ Generated Roads - Tile Count:", roadTiles.size);
+
+  // 🚧 PHASE 4: Create fixed locations for WFC
+  // This tells the WFC: "These tiles MUST be 'meadow'"
+  const fixedLocations = [];
+
+  // Add the trade locations themselves (force them to be 'meadow')
+  locations.forEach((loc) => {
+    fixedLocations.push({ x: loc.x, y: loc.y, terrainType: "meadow" });
+  });
+
+  // Add the road tiles (also force them to be 'meadow')
+  roadTiles.forEach((tileKey) => {
+    const [x, y] = tileKey.split(",").map(Number);
+    fixedLocations.push({ x, y, terrainType: "meadow" });
+   // console.log(x,y)
+  });
+
+  // Log for debugging
+  console.log("🧱 Fixed Locations for WFC:", fixedLocations.length);
+
+  // 🚧 PHASE 4: Generate terrain WITH constraints
+  const wfc = new WaveFunctionCollapse(WIDTH, HEIGHT, gameState.fantasyData.elevation, SEED, { fixedLocations });
+  wfc.collapse();
+  const terrainMap = wfc.getFinalMap();
+  console.log("🗺️ Generated Terrain Map:", terrainMap);
+
+  // Update game state — this sets gameState.mapSeed and gameState.mapName
+  gameState.ingestWFCMap(locations, SEED);
 
   // 🆕 GENERATE THE FIRST QUEST
-  // We generate it for location index 0 (The Commons) on Day 1.
-  const firstQuest = QuestLogic.generateQuest(gameState, 0, gameState.mapSeed, 1);
+  // ✅ FIXED: Use local SEED here, NOT gameState.mapSeed
+  const firstQuest = QuestLogic.generateQuest(gameState, 0, SEED, 1);
   gameState.setQuest(firstQuest);
 
   // Render map
   // Clear previous canvases (optional, but safe)
   document.querySelectorAll("#mapGrid > canvas").forEach((c) => c.remove());
-  // Create and render painterly map
-  const overlay = new ParchmentOverlay(WIDTH, HEIGHT, gameState.fantasyData.themeName || "default", SEED);
-  overlay.initFromTheme(gameState.fantasyData);
-  overlay.setMapData(terrainMap);
-  const canvas = overlay.createCanvas();
-  document.getElementById("mapGrid").appendChild(canvas);
-  overlay.render();
-  renderLocationsOnMap(placedLocations); // 👈 DOM markers on top
+
+  // 🚫 PHASE 0: DISABLED FOR TESTING - Parchment Overlay
+  // const overlay = new ParchmentOverlay(WIDTH, HEIGHT, gameState.fantasyData.themeName || "default", SEED);
+  // overlay.initFromTheme(gameState.fantasyData);
+  // overlay.setMapData(terrainMap);
+  // const canvas = overlay.createCanvas();
+  // document.getElementById("mapGrid").appendChild(canvas);
+  // overlay.render();
+
+  renderLocationsOnMap(locations); // 👈 DOM markers on top
+
   // Update UI
   document.getElementById("mapName").textContent = `${gameState.mapName} | Seed: ${SEED}`;
   renderMapUI();
   document.getElementById("generateMapBtn").style.display = "none";
   document.getElementById("newMapBtn").style.display = "none";
-  console.log("✅ New map generated with", placedLocations.length, "locations");
+  console.log("✅ New map generated with", locations.length, "locations");
 }
 
 function resetGameAndGenerateMap() {
@@ -213,6 +285,109 @@ function placeLocations(wfcMap, fantasyData) {
   }
 
   return locations;
+}
+
+// --- MAP LAYOUT GENERATION ---
+
+/**
+ * Generates the initial layout of location markers on an empty grid.
+ * Ignores terrain rules for placement for MVP, focusing on spatial distribution.
+ * @param {number} width - Grid width
+ * @param {number} height - Grid height
+ * @param {Object} fantasyData - Game data
+ * @param {string} seed - Random seed
+ * @returns {Object} - { locations: Array, locationGrid: 2D Array }
+ */
+function generateLocationLayout(width, height, fantasyData, seed) {
+  Math.seedrandom(seed);
+  const locationGrid = Array.from({ length: height }, () => Array(width).fill(null));
+  const locations = [];
+  const availableLocations = [...fantasyData.tradeNodes];
+  availableLocations.sort(() => Math.random() - 0.5);
+
+  const maxLocations = Math.min(8, Math.floor((width + height) / 4));
+
+  for (const template of availableLocations) {
+    if (locations.length >= maxLocations) break;
+    const validPosition = findValidLocationForLayout(locationGrid, template, width, height);
+    if (validPosition) {
+      const newLocation = { ...template, x: validPosition.x, y: validPosition.y };
+      locations.push(newLocation);
+      locationGrid[validPosition.y][validPosition.x] = newLocation; // Mark the tile as occupied
+    }
+  }
+
+  return { locations, locationGrid };
+}
+
+/**
+ * Finds a valid position for a location on the layout grid.
+ * For MVP, only checks for collision with other locations and enforces a minimum distance.
+ * @param {Array} locationGrid - 2D grid tracking placed locations
+ * @param {Object} template - Location template
+ * @param {number} width - Grid width
+ * @param {number} height - Grid height
+ * @returns {Object|null} - {x, y} or null
+ */
+function findValidLocationForLayout(locationGrid, template, width, height) {
+  const candidates = [];
+
+  // Define a minimum distance (in tiles) from other locations
+  const MIN_DISTANCE = 3;
+
+  for (let y = 1; y < height - 1; y++) {
+    // Avoid very edges for better pathfinding
+    for (let x = 1; x < width - 1; x++) {
+      if (locationGrid[y][x] !== null) continue; // Skip if tile is occupied
+
+      // Check minimum distance from all other placed locations
+      let tooClose = false;
+      outerLoop: for (let dy = -MIN_DISTANCE; dy <= MIN_DISTANCE; dy++) {
+        for (let dx = -MIN_DISTANCE; dx <= MIN_DISTANCE; dx++) {
+          const nx = x + dx;
+          const ny = y + dy;
+          if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+            if (locationGrid[ny][nx] !== null) {
+              tooClose = true;
+              break outerLoop; // Break out of both loops
+            }
+          }
+        }
+      }
+
+      if (!tooClose) {
+        candidates.push({ x, y });
+      }
+    }
+  }
+
+  return candidates.length > 0 ? candidates[Math.floor(Math.random() * candidates.length)] : null;
+}
+
+/**
+ * Picks the location closest to the geometric center of the map.
+ * @param {Array} locations - Array of location objects
+ * @param {number} width - Grid width
+ * @param {number} height - Grid height
+ * @returns {Object} - The central location object
+ */
+function pickCentralLocation(locations, width, height) {
+  const centerX = width / 2;
+  const centerY = height / 2;
+
+  let centralLocation = locations[0];
+  let minDistance = Infinity;
+
+  for (const loc of locations) {
+    // Use Manhattan distance for simplicity
+    const distance = Math.abs(loc.x - centerX) + Math.abs(loc.y - centerY);
+    if (distance < minDistance) {
+      minDistance = distance;
+      centralLocation = loc;
+    }
+  }
+
+  return centralLocation;
 }
 
 function renderLocationsOnMap(locations) {
@@ -547,37 +722,39 @@ function wireTradeButtons() {
 
 function wireBasicTradeButtons() {
   document.querySelectorAll(".btn-buy").forEach((btn) => {
-  btn.addEventListener("click", (e) => {
-    const itemId = e.target.dataset.item;
-    const quantity = parseInt(e.target.dataset.quantity) || 1;
-    for (let i = 0; i < quantity; i++) {
-      marketActions.executeTrade(itemId, "buy");
-    }
-    renderTradeUI();
+    btn.addEventListener("click", (e) => {
+      const itemId = e.target.dataset.item;
+      const quantity = parseInt(e.target.dataset.quantity) || 1;
+      for (let i = 0; i < quantity; i++) {
+        marketActions.executeTrade(itemId, "buy");
+      }
+      renderTradeUI();
+    });
   });
-});
 
   document.querySelectorAll(".btn-sell").forEach((btn) => {
-  btn.addEventListener("click", (e) => {
-    const itemId = e.target.dataset.item;
-    const quantity = parseInt(e.target.dataset.quantity) || 1;
-    for (let i = 0; i < quantity; i++) {
-      marketActions.executeTrade(itemId, "sell");
-    }
-    renderTradeUI();
+    btn.addEventListener("click", (e) => {
+      const itemId = e.target.dataset.item;
+      const quantity = parseInt(e.target.dataset.quantity) || 1;
+      for (let i = 0; i < quantity; i++) {
+        marketActions.executeTrade(itemId, "sell");
+      }
+      renderTradeUI();
+    });
   });
-});
 }
 
 function wireQuickTradeButtons() {
-  document.querySelectorAll(".quick-buy-all").forEach((btn) => { // 👈 UPDATED SELECTOR
+  document.querySelectorAll(".quick-buy-all").forEach((btn) => {
+    // 👈 UPDATED SELECTOR
     btn.addEventListener("click", (e) => {
       const itemId = e.target.dataset.item;
       marketActions.quickBuyAll(itemId);
       renderTradeUI();
     });
   });
-  document.querySelectorAll(".quick-sell-all").forEach((btn) => { // 👈 UPDATED SELECTOR
+  document.querySelectorAll(".quick-sell-all").forEach((btn) => {
+    // 👈 UPDATED SELECTOR
     btn.addEventListener("click", (e) => {
       const itemId = e.target.dataset.item;
       marketActions.quickSellAll(itemId);
@@ -593,8 +770,8 @@ function wireQuantityButtons() {
       const action = e.target.dataset.action;
       const delta = action === "increase" ? 1 : -1;
       // 👇 REPLACED: Update the text on the BUY/SELL button
-      const row = e.target.closest('.item-row');
-      const actionButton = row.querySelector('.action-button');
+      const row = e.target.closest(".item-row");
+      const actionButton = row.querySelector(".action-button");
       const currentText = actionButton.textContent;
       const match = currentText.match(/(BUY|SELL) (\d+)/);
       if (match) {

@@ -1,11 +1,12 @@
 // /js/classes/WaveFunctionCollapse.js
 
 class WaveFunctionCollapse {
-  constructor(width, height, terrainRules, seed) {
+  constructor(width, height, terrainRules, seed, constraints = {}) {
     this.width = width;
     this.height = height;
     this.terrainRules = terrainRules; // from fantasy.json elevation
     this.seed = seed;
+    this.constraints = constraints; // 🚧 PHASE 4: New parameter for fixed locations/roads
     Math.seedrandom(seed); // seeded randomness
 
     // Initialize grid: each cell is a set of possible terrain types
@@ -18,6 +19,25 @@ class WaveFunctionCollapse {
     this.entropyGrid = Array.from({ length: height }, () =>
       Array.from({ length: width }, () => Object.keys(terrainRules).length)
     );
+
+    // 🚧 PHASE 4: Apply constraints immediately after initialization
+    this.initializeGrid();
+  }
+
+  initializeGrid() {
+    // If we have fixed locations, apply them to the grid
+    if (this.constraints.fixedLocations) {
+      for (const { x, y, terrainType } of this.constraints.fixedLocations) {
+        // Check bounds
+        if (x >= 0 && x < this.width && y >= 0 && y < this.height) {
+          // Force this cell to be the specified terrain type
+          this.setCell(x, y, terrainType);
+          // Propagate the constraint to neighbors immediately
+          this.propagate(x, y);
+        }
+      }
+    }
+    // The main collapse loop will handle the rest
   }
 
   collapse() {
@@ -25,7 +45,6 @@ class WaveFunctionCollapse {
     while (this.hasUncollapsed()) {
       const cell = this.getLowestEntropyCell();
       if (!cell) break;
-
       const [x, y] = cell;
       const options = this.grid[y][x];
       const chosen = options[Math.floor(Math.random() * options.length)];
@@ -43,7 +62,6 @@ class WaveFunctionCollapse {
   getLowestEntropyCell() {
     let minEntropy = Infinity;
     let candidates = [];
-
     for (let y = 0; y < this.height; y++) {
       for (let x = 0; x < this.width; x++) {
         const entropy = this.entropyGrid[y][x];
@@ -55,7 +73,6 @@ class WaveFunctionCollapse {
         }
       }
     }
-
     if (candidates.length === 0) return null;
     return candidates[Math.floor(Math.random() * candidates.length)];
   }
@@ -68,25 +85,19 @@ class WaveFunctionCollapse {
   propagate(x, y) {
     const terrainType = this.grid[y][x];
     const allowedNeighbors = this.terrainRules[terrainType].adjacent;
-
     const directions = [
       [-1, 0], [1, 0], [0, -1], [0, 1] // 4-directional
     ];
-
     for (const [dx, dy] of directions) {
       const nx = x + dx;
       const ny = y + dy;
-
       if (nx < 0 || nx >= this.width || ny < 0 || ny >= this.height) continue;
-
       const neighborCell = this.grid[ny][nx];
       if (!Array.isArray(neighborCell)) continue; // already collapsed
-
       // Filter neighbor options to only those allowed adjacent to current terrain
       const newOptions = neighborCell.filter(option => 
         allowedNeighbors.includes(option)
       );
-
       if (newOptions.length === 0) {
         // Fallback: allow any if constraint breaks (MVP safety)
         this.grid[ny][nx] = Object.keys(this.terrainRules)[0];
@@ -104,3 +115,5 @@ class WaveFunctionCollapse {
     ));
   }
 }
+
+//export default WaveFunctionCollapse; // 👈 Add this if you plan to use ES6 modules later, otherwise it's fine without.
