@@ -50,10 +50,12 @@ class MapManager {
       pathObstacles.delete(endKey);
 
       const path = GridSystem.findPath(
-        { x: centralLocation.x, y: centralLocation.y }, // Start
-        { x: targetLocation.x, y: targetLocation.y }, // End
-        pathObstacles // Obstacles (without start/end)
-      );
+  { x: centralLocation.x, y: centralLocation.y }, // Start
+  { x: targetLocation.x, y: targetLocation.y }, // End
+  pathObstacles, // Obstacles (without start/end)
+  this.width, // 👈 Add this
+  this.height // 👈 Add this
+);
 
       // If a path is found, add all its points to the roadTiles set
       if (path) {
@@ -105,7 +107,14 @@ class MapManager {
         pathObstacles.delete(startKey);
         pathObstacles.delete(endKey);
         // Find the path
-        const path = GridSystem.findPath({ x: locations[i].x, y: locations[i].y }, { x: locations[j].x, y: locations[j].y }, pathObstacles);
+        // Find the path
+const path = GridSystem.findPath(
+  { x: locations[i].x, y: locations[i].y },
+  { x: locations[j].x, y: locations[j].y },
+  pathObstacles,
+  this.width, // 👈 Add this
+  this.height // 👈 Add this
+);
         // Store the path length (number of tiles/edges). If no path, use a high number.
         // Path length - 1 because the path array includes both start and end points.
         this.locationPaths[this.gameState._getPathKey(i, j)] = path ? path.length - 1 : 999;

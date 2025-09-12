@@ -8,7 +8,7 @@ class GridSystem {
   }
 
   // New A* Pathfinding
-  static findPath(start, end, obstacles = new Set()) {
+  static findPath(start, end, obstacles = new Set(), width = 20, height = 15) {
     // obstacles is a Set of strings like "x,y"
     const openSet = [];
     const closedSet = new Set();
@@ -59,7 +59,9 @@ class GridSystem {
         { x: current.x, y: current.y + 1 }
       ].filter(neighbor => {
         // Check bounds (Use dynamic size later, for now hardcode 15x12 / 20 / 15)
-        if (neighbor.x < 0 || neighbor.x >= 20 || neighbor.y < 0 || neighbor.y >= 15) return false;
+       // if (neighbor.x < 0 || neighbor.x >= 20 || neighbor.y < 0 || neighbor.y >= 15) return false;
+        // Check bounds using dynamic map dimensions
+if (neighbor.x < 0 || neighbor.x >= width || neighbor.y < 0 || neighbor.y >= height) return false;
         // Check if it's an obstacle (e.g., another location)
         if (obstacles.has(`${neighbor.x},${neighbor.y}`)) return false;
         // Check if in closed set
