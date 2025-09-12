@@ -103,7 +103,7 @@ class MapRenderer {
     this.fantasyData = fantasyData;
   }
 
-  renderLocations(locations) {
+  renderLocations00(locations) {
     // Clear previous location markers
     this.locationMarkers.forEach((marker) => marker.remove());
     this.locationMarkers = [];
@@ -147,6 +147,91 @@ class MapRenderer {
     });
   }
 
+
+
+
+
+
+
+
+
+
+
+
+
+renderLocations(locations) {
+  // Clear previous location markers
+  this.locationMarkers.forEach((marker) => marker.remove());
+  this.locationMarkers = [];
+
+  // 👇 STORE LOCATIONS FOR RE-RENDERING
+  this.locations = locations;
+
+  // 🆕 🆕 🆕 DEFER RENDERING UNTIL NEXT ANIMATION FRAME
+  // This ensures the canvas (rendered by renderTerrainMap) is fully laid out in the DOM.
+  requestAnimationFrame(() => {
+    locations.forEach((location, index) => {
+      const marker = document.createElement("div");
+      marker.className = "location-marker";
+      // 🆕 NOW we can safely get the offset because the canvas has been rendered
+      const offset = this.getCanvasOffset();
+      marker.style.left = `${offset.x + location.x * this.tileSize}px`;
+      marker.style.top = `${offset.y + location.y * this.tileSize}px`;
+      marker.style.position = "absolute";
+      marker.style.zIndex = "10";
+      marker.style.width = `${this.tileSize}px`;
+      marker.style.height = `${this.tileSize}px`;
+      marker.style.display = "flex";
+      marker.style.alignItems = "center";
+      marker.style.justifyContent = "center";
+      marker.style.fontSize = `${this.tileSize * 0.8}px`;
+      marker.style.pointerEvents = "auto";
+      marker.style.cursor = "pointer";
+      marker.textContent = location.emoji || "📍";
+      marker.title = location.name;
+
+      // Make it clickable
+      marker.addEventListener("click", () => {
+        if (window.switchToTrade) {
+          window.switchToTrade(index);
+        } else {
+          console.error("MapRenderer: switchToTrade is not available globally.");
+        }
+      });
+
+      // 👇 APPEND MARKER TO mapContainer
+      this.mapContainer.appendChild(marker);
+      // 👇 TRACK THE MARKER
+      this.locationMarkers.push(marker);
+    });
+  });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   // Inside MapRenderer class
   getCanvasOffset() {
     if (!this.canvas) return { x: 0, y: 0 };
@@ -175,5 +260,29 @@ class MapRenderer {
 
     this.locationMarkers.forEach((marker) => marker.remove());
     this.locationMarkers = [];
+  }
+
+  reset() {
+    // Remove the canvas if it exists
+    if (this.canvas) {
+      this.canvas.remove();
+      this.canvas = null;
+      this.ctx = null;
+    }
+    // Remove all tracked markers
+    this.locationMarkers.forEach((marker) => {
+      if (marker.parentNode) {
+        // Check if it's still in the DOM
+        marker.remove();
+      }
+    });
+    this.locationMarkers = [];
+    // 👇👇👇 RESET ALL DATA REFERENCES 👇👇👇
+    this.terrainMap = null;
+    this.locations = null;
+    this.fantasyData = null;
+    // Optional: Reset tile size to default
+    this.tileSize = 24;
+    console.log("MapRenderer: Reset complete. Internal state cleared.");
   }
 }

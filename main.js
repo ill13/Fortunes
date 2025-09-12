@@ -21,8 +21,6 @@ window.addEventListener("DOMContentLoaded", async () => {
   console.log("✅ Phase 1 Ready — Scenes loaded, stubs in place.");
 });
 
-
-
 async function initializeGame() {
   // Load data
   const [fantasyData, rulesData] = await Promise.all([
@@ -35,11 +33,15 @@ async function initializeGame() {
   gameState = new GameState(fantasyData);
   marketLogic = new MarketLogic(fantasyData.items);
   marketActions = new MarketActions(gameState, marketLogic);
+   // 🆕 DESTROY OLD RENDERER IF IT EXISTS
+  if (window.mapRenderer && typeof window.mapRenderer.destroy === 'function') {
+    window.mapRenderer.destroy();
+  }
   // 🆕 CREATE MAP MANAGER
   const mapManager = new MapManager(gameState, fantasyData);
   window.mapManager = mapManager; // Make it globally accessible for event listeners
   // 🆕 CREATE MAP RENDERER
-  const mapRenderer = new MapRenderer('mapGrid');
+  const mapRenderer = new MapRenderer("mapGrid");
   window.mapRenderer = mapRenderer; // Make it globally accessible for event listeners
   // 🆕 GENERATE THE FIRST MAP USING THE NEW SYSTEMS
   mapManager.generateNewMap(); // 👈 Removed the renderer argument
@@ -52,8 +54,6 @@ async function initializeGame() {
   }
 }
 
-
-
 function wireEventListeners() {
   // 🆕 Wire the map icon
   document.getElementById("backToMapIcon").addEventListener("click", () => {
@@ -61,8 +61,15 @@ function wireEventListeners() {
   });
   // Wire the generate map button
   document.getElementById("generateMapBtn").addEventListener("click", () => {
-    window.mapManager.generateNewMap(); // 👈 No renderer argument
-    // ✅ Render after generation
+    // ✅ Reset renderer first
+    if (window.mapRenderer) {
+      window.mapRenderer.reset();
+    }
+    // Clear container
+    document.getElementById("mapGrid").innerHTML = "";
+
+    window.mapManager.generateNewMap();
+
     if (window.mapRenderer && gameState.locations.length > 0) {
       window.mapRenderer.renderTerrainMap(window.mapManager.terrainMap, gameState.fantasyData);
       window.mapRenderer.renderLocations(gameState.locations);
@@ -78,24 +85,57 @@ function wireEventListeners() {
 // SCENE MANAGEMENT
 // =============================================================================
 
+
 function switchToMap() {
   document.getElementById("mapScene").classList.add("active");
   document.getElementById("tradeScene").classList.remove("active");
   document.getElementById("backToMapIcon").style.display = "block";
-
-  // ✅ Set location name to "The Map"
   gameState.currentLocationIndex = null;
   document.getElementById("locationName").textContent = "The Map";
   document.getElementById("locationIcon").textContent = "🗺️";
   if (gameState.hasVisitedLocation) {
     gameState.day += 1;
   }
-  gameState.hasVisitedLocation = false; // Reset for next visit
-
-  //gameState.day += 1;
+  gameState.hasVisitedLocation = false;
   checkSeasonEnd();
+
+  // ✅ Reset renderer state when switching to map
+  if (window.mapRenderer) {
+    window.mapRenderer.reset(); // This clears the DOM and internal data references
+    // 🆕 🆕 🆕 CRITICAL FIX: IMMEDIATELY RE-RENDER THE MAP AFTER RESET
+    // We have the data in gameState and window.mapManager, so use it.
+    if (gameState.locations.length > 0 && window.mapManager && window.mapManager.terrainMap) {
+      window.mapRenderer.renderTerrainMap(window.mapManager.terrainMap, gameState.fantasyData);
+      window.mapRenderer.renderLocations(gameState.locations);
+    }
+  }
+
   renderMapUI();
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 function switchToTrade(locationIndex) {
   gameState.setLocation(locationIndex);
@@ -150,22 +190,26 @@ function updateTravelTime(location) {
   document.getElementById("travelTime").textContent = `🚶 Travel Time: ${travelTime} day${travelTime !== 1 ? "s" : ""}`;
 }
 
-
 function resetGameAndGenerateMap() {
   gameState.reset();
-  document.getElementById("mapGrid").innerHTML = ""; // This will clear the old canvas and markers
-  window.mapManager.generateNewMap(); // 👈 No renderer argument
-  // ✅ Render after generation
+
+  // ✅ NEW: Tell the renderer to clean up its state BEFORE we nuke the container
+  if (window.mapRenderer) {
+    window.mapRenderer.reset();
+  }
+
+  // ✅ NOW it's safe to clear the container
+  document.getElementById("mapGrid").innerHTML = "";
+
+  window.mapManager.generateNewMap();
+
   if (window.mapRenderer && gameState.locations.length > 0) {
     window.mapRenderer.renderTerrainMap(window.mapManager.terrainMap, gameState.fantasyData);
     window.mapRenderer.renderLocations(gameState.locations);
   }
+
   document.getElementById("newsFeed").textContent = "📰 A new journey begins...";
 }
-
-
-
-
 
 function placeLocations(wfcMap, fantasyData) {
   const height = wfcMap.length;
@@ -196,7 +240,6 @@ function placeLocations(wfcMap, fantasyData) {
   return locations;
 }
 
-
 /**
  * Renders a simple colored grid based on the terrainMap.
  * Uses the base color from the fantasy.json elevation data.
@@ -206,49 +249,47 @@ function placeLocations(wfcMap, fantasyData) {
  * @param {number} height - Grid height
  */
 function renderSimpleTerrainMap(terrainMap, fantasyData, width, height) {
-    const mapGrid = document.getElementById("mapGrid");
-    const tileSize = 48; // Fixed tile size for simplicity
+  const mapGrid = document.getElementById("mapGrid");
+  const tileSize = 48; // Fixed tile size for simplicity
 
-    // Clear any existing canvas
-    const existingCanvas = mapGrid.querySelector('canvas');
-    if (existingCanvas) {
-        existingCanvas.remove();
+  // Clear any existing canvas
+  const existingCanvas = mapGrid.querySelector("canvas");
+  if (existingCanvas) {
+    existingCanvas.remove();
+  }
+
+  // Create a new canvas
+  const canvas = document.createElement("canvas");
+  canvas.width = width * tileSize;
+  canvas.height = height * tileSize;
+  canvas.style.position = "absolute";
+  canvas.style.top = "0";
+  canvas.style.left = "0";
+  canvas.style.zIndex = "0";
+
+  const ctx = canvas.getContext("2d");
+
+  // Get base colors from fantasyData
+  const elevation = fantasyData.elevation;
+
+  // Draw each tile
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const terrainType = terrainMap[y][x];
+      const color = elevation[terrainType]?.colors?.[0] || "#cccccc"; // Fallback to gray
+
+      ctx.fillStyle = color;
+      ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
+
+      // Optional: Draw a subtle grid line
+      ctx.strokeStyle = "#ffffff44";
+      ctx.lineWidth = 0.5;
+      ctx.strokeRect(x * tileSize, y * tileSize, tileSize, tileSize);
     }
+  }
 
-    // Create a new canvas
-    const canvas = document.createElement("canvas");
-    canvas.width = width * tileSize;
-    canvas.height = height * tileSize;
-    canvas.style.position = "absolute";
-    canvas.style.top = "0";
-    canvas.style.left = "0";
-    canvas.style.zIndex = "0";
-
-    const ctx = canvas.getContext("2d");
-
-    // Get base colors from fantasyData
-    const elevation = fantasyData.elevation;
-
-    // Draw each tile
-    for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
-            const terrainType = terrainMap[y][x];
-            const color = elevation[terrainType]?.colors?.[0] || "#cccccc"; // Fallback to gray
-
-            ctx.fillStyle = color;
-            ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
-
-            // Optional: Draw a subtle grid line
-            ctx.strokeStyle = "#ffffff44";
-            ctx.lineWidth = 0.5;
-            ctx.strokeRect(x * tileSize, y * tileSize, tileSize, tileSize);
-        }
-    }
-
-    mapGrid.appendChild(canvas);
+  mapGrid.appendChild(canvas);
 }
-
-
 
 // 🆕 REPLACE showRandomNews()
 function updateNewsPanel() {
