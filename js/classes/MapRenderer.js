@@ -1,26 +1,79 @@
 class MapRenderer {
   constructor(mapContainerId) {
-    this.mapContainer = document.getElementById(mapContainerId); // e.g., 'mapGrid'
+    this.mapContainer = document.getElementById(mapContainerId);
     if (!this.mapContainer) {
       console.error(`MapRenderer: Container with ID "${mapContainerId}" not found.`);
+      // 👇 Don't just log — bail out. Nothing to render without a container.
+      return;
     }
+
+    // Initialize state
     this.canvas = null;
     this.ctx = null;
-    this.tileSize = 24; // Match the size used in the old render function
+    this.tileSize = 24;
+    this.terrainMap = null;
+    this.locations = null;
+    this.fantasyData = null;
+    this.locationMarkers = [];
+    this.resizeTimeout = null;
+
+    // Bind methods
+    this.handleResize = this.handleResize.bind(this);
+
+    // Set up resize listeners
+    window.addEventListener("resize", this.handleResize);
+
+    // 👇 Set up ResizeObserver ONLY if mapContainer exists
+    this.resizeObserver = new ResizeObserver(() => {
+      this.handleResize();
+    });
+    this.resizeObserver.observe(this.mapContainer);
+  }
+
+  handleResize() {
+    clearTimeout(this.resizeTimeout);
+    this.resizeTimeout = setTimeout(() => {
+      if (this.terrainMap && this.locations && this.fantasyData) {
+        this.renderTerrainMap(this.terrainMap, this.fantasyData);
+        this.renderLocations(this.locations);
+      }
+    }, 150); // Feels instant, prevents spam
   }
 
   renderTerrainMap(terrainMap, fantasyData) {
     const height = terrainMap.length;
     const width = terrainMap[0].length;
 
+    // Get the container's available space
+    const containerWidth = this.mapContainer.clientWidth;
+    const containerHeight = this.mapContainer.clientHeight;
+
+    // Calculate the maximum tile size that fits both dimensions
+    const maxTileSizeWidth = containerWidth / width;
+    const maxTileSizeHeight = containerHeight / height;
+    let calculatedTileSize = Math.floor(Math.min(maxTileSizeWidth, maxTileSizeHeight));
+
+    // Ensure a minimum readable size (e.g., 16px)
+    calculatedTileSize = Math.max(calculatedTileSize, 16);
+
+    // Use the calculated size
+    this.tileSize = calculatedTileSize;
+
+    // Clear any existing canvas
+    if (this.canvas) {
+      this.canvas.remove();
+    }
+
     // Create a new canvas
     this.canvas = document.createElement("canvas");
-    this.canvas.id ="canvas"
     this.canvas.width = width * this.tileSize;
     this.canvas.height = height * this.tileSize;
     this.canvas.style.position = "absolute";
-  //  this.canvas.style.top = "0";
-   // this.canvas.style.left = "0";
+    this.canvas.style.top = "0";
+    this.canvas.style.bottom = "0";
+    this.canvas.style.left = "0";
+    this.canvas.style.right = "0";
+    this.canvas.style.margin = "auto"; // 👈 THIS IS THE KEY
     this.canvas.style.zIndex = "0";
 
     this.ctx = this.canvas.getContext("2d");
@@ -44,43 +97,83 @@ class MapRenderer {
 
     // Append the canvas to the container
     this.mapContainer.appendChild(this.canvas);
+
+    // 👇 STORE DATA FOR RE-RENDERING
+    this.terrainMap = terrainMap;
+    this.fantasyData = fantasyData;
   }
 
- 
-
-    renderLocations(locations) {
+  renderLocations(locations) {
     // Clear previous location markers
-    document.querySelectorAll(".location-marker").forEach((el) => el.remove());
-    
-    locations.forEach((location, index) => { // 👈 Get the index here
+    this.locationMarkers.forEach((marker) => marker.remove());
+    this.locationMarkers = [];
+
+    // 👇 STORE LOCATIONS FOR RE-RENDERING
+    this.locations = locations;
+
+    locations.forEach((location, index) => {
       const marker = document.createElement("div");
       marker.className = "location-marker";
-      marker.style.left = `${location.x * this.tileSize + this.tileSize / 2 - 12}px`;
-      marker.style.top = `${location.y * this.tileSize + this.tileSize / 2 - 12}px`;
+
+      // Position relative to the canvas origin (0,0)
+      const offset = this.getCanvasOffset();
+      marker.style.left = `${offset.x + location.x * this.tileSize}px`;
+      marker.style.top = `${offset.y + location.y * this.tileSize}px`;
       marker.style.position = "absolute";
       marker.style.zIndex = "10";
-      marker.style.width = "24px";
-      marker.style.height = "24px";
+      marker.style.width = `${this.tileSize}px`;
+      marker.style.height = `${this.tileSize}px`;
       marker.style.display = "flex";
       marker.style.alignItems = "center";
       marker.style.justifyContent = "center";
-      marker.style.fontSize = "20px";
+      marker.style.fontSize = `${this.tileSize * 0.8}px`;
       marker.style.pointerEvents = "auto";
       marker.style.cursor = "pointer";
       marker.textContent = location.emoji || "📍";
-      // Optional: tooltip
       marker.title = location.name;
+
       // Make it clickable
       marker.addEventListener("click", () => {
         if (window.switchToTrade) {
-          window.switchToTrade(index); // 👈 Use the forEach index, NOT location._arrayIndex
+          window.switchToTrade(index);
         } else {
           console.error("MapRenderer: switchToTrade is not available globally.");
         }
       });
+
+      // 👇 APPEND MARKER TO mapContainer, NOT canvas
+      // This ensures it's in the correct stacking context and will be visible.
       this.mapContainer.appendChild(marker);
     });
   }
 
+  // Inside MapRenderer class
+  getCanvasOffset() {
+    if (!this.canvas) return { x: 0, y: 0 };
+    const containerRect = this.mapContainer.getBoundingClientRect();
+    const canvasRect = this.canvas.getBoundingClientRect();
+    return {
+      x: canvasRect.left - containerRect.left + window.scrollX,
+      y: canvasRect.top - containerRect.top + window.scrollY,
+    };
+  }
 
+  destroy() {
+    window.removeEventListener("resize", this.handleResize);
+
+    if (this.resizeObserver) {
+      this.resizeObserver.unobserve(this.mapContainer);
+      this.resizeObserver.disconnect();
+      this.resizeObserver = null; // 🧹 clean reference
+    }
+
+    // Optional: Remove canvas and markers from DOM
+    if (this.canvas) {
+      this.canvas.remove();
+      this.canvas = null;
+    }
+
+    this.locationMarkers.forEach((marker) => marker.remove());
+    this.locationMarkers = [];
+  }
 }

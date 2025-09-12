@@ -436,7 +436,7 @@ function renderTradeUI() {
       <div class="buy-controls">
         <div class="quantity-action-row">
           <button class="quantity-btn" data-action="decrease" data-item="${item.id}">−</button>
-          <button class="btn btn-buy action-button quick-buy-all" data-item="${item.id}">BUY 1</button>
+          <button class="btn btn-buy action-button buy" data-item="${item.id}">BUY 1</button>
           <button class="quantity-btn" data-action="increase" data-item="${item.id}">+</button>
         </div>
         <button class="btn btn-buy action-button quick-buy-all" data-item="${item.id}">Buy All (${stock})</button>
@@ -444,7 +444,7 @@ function renderTradeUI() {
       <div class="sell-controls">
         <div class="quantity-action-row">
           <button class="quantity-btn" data-action="decrease" data-item="${item.id}" style="background: var(--color-ruby); color: white;">−</button>
-          <button class="btn btn-sell action-button quick-sell-all" data-item="${item.id}">SELL 1</button>
+          <button class="btn btn-sell action-button sell" data-item="${item.id}">SELL 1</button>
           <button class="quantity-btn" data-action="increase" data-item="${item.id}" style="background: var(--color-ruby); color: white;">+</button>
         </div>
         <button class="btn btn-sell action-button quick-sell-all" data-item="${item.id}">Sell All (${owned})</button>
@@ -594,17 +594,39 @@ function wireQuantityButtons() {
       const itemId = e.target.dataset.item;
       const action = e.target.dataset.action;
       const delta = action === "increase" ? 1 : -1;
-      // 👇 REPLACED: Update the text on the BUY/SELL button
+
       const row = e.target.closest(".item-row");
       const actionButton = row.querySelector(".action-button");
       const currentText = actionButton.textContent;
       const match = currentText.match(/(BUY|SELL) (\d+)/);
+
       if (match) {
         let currentQty = parseInt(match[2], 10);
-        currentQty = Math.max(1, currentQty + delta); // Min 1
-        actionButton.textContent = `${match[1]} ${currentQty}`;
-        // Store the quantity on the button for the executeTrade function
-        actionButton.dataset.quantity = currentQty;
+        const newQty = Math.max(1, currentQty + delta); // Min 1
+
+        // 👇 ADD STOCK/INVENTORY VALIDATION
+        const location = gameState.getLocation();
+        const isBuying = match[1] === "BUY";
+        let maxAllowed;
+
+        if (isBuying) {
+          const price = marketLogic.getPrice(itemId, location.template);
+          const canAfford = Math.floor(gameState.gold / price);
+          const inStock = gameState.getCurrentStock(itemId);
+          maxAllowed = Math.min(canAfford, inStock);
+        } else {
+          maxAllowed = gameState.getInventoryCount(itemId);
+        }
+
+        // Enforce the limit
+        const finalQty = Math.min(newQty, maxAllowed);
+
+        // Only update if the quantity actually changes and is valid
+        if (finalQty !== currentQty && finalQty >= 1) {
+          actionButton.textContent = `${match[1]} ${finalQty}`;
+          actionButton.dataset.quantity = finalQty;
+        }
+        // If maxAllowed is 0, you could disable the button or show a tooltip, but for MVP, capping at 1 is fine.
       }
     });
   });

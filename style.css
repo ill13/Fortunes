@@ -69,25 +69,36 @@ button:hover {
 
 .scene {
   display: none;
-  padding: var(--space-lg);
+  padding: 1.5rem;
+  min-height: 0; /* 👈 This is crucial for flex children to work properly */
 }
 
 .scene.active {
   display: block;
 }
 
+#mapScene.active {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* 👈 Take full viewport height when active */
+}
+
 /* === Map & Location === */
+
 #mapGrid {
   width: 100%;
-  height: 400px;
   background: #f0e6d2;
-  border: 2px solid var(--color-panel-border);
-  margin: var(--space-md) auto;
+  border: 2px solid #d4c5a8;
+  margin: 1rem auto;
   display: flex;
   align-items: center;
+  justify-content: center;
   position: relative;
   overflow: hidden;
+  flex: 1;
+  min-height: 0; /* 👈 CRITICAL — allows flex shrinking */
 }
+
 
 .location-overlay {
   position: absolute;
@@ -109,7 +120,7 @@ button:hover {
   border: 2px solid hsl(0, 100%, 52%);
   border-radius: 50%;
   pointer-events: none;
-  z-index: 5;
+  z-index: 999;
   transform: translate(-50%, -50%);
 }
 
@@ -554,3 +565,21 @@ button:hover {
   display: flex;
   align-items: center;
 }
+
+
+
+
+/* === 📱 MOBILE-FIRST LAYOUT === */
+
+/* The main app container */
+#app-container {
+  display: flex;
+  flex-direction: column;
+  
+  background: var(--color-wood); /* Ensure consistent background */
+}
+
+/* Make the map container use all available space within the scene */
+
+
+
