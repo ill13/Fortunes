@@ -58,8 +58,8 @@ class GridSystem {
         { x: current.x, y: current.y - 1 },
         { x: current.x, y: current.y + 1 }
       ].filter(neighbor => {
-        // Check bounds (Use dynamic size later, for now hardcode 15x12)
-        if (neighbor.x < 0 || neighbor.x >= 15 || neighbor.y < 0 || neighbor.y >= 12) return false;
+        // Check bounds (Use dynamic size later, for now hardcode 15x12 / 20 / 15)
+        if (neighbor.x < 0 || neighbor.x >= 20 || neighbor.y < 0 || neighbor.y >= 15) return false;
         // Check if it's an obstacle (e.g., another location)
         if (obstacles.has(`${neighbor.x},${neighbor.y}`)) return false;
         // Check if in closed set

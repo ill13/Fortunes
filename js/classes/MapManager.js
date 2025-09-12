@@ -3,18 +3,16 @@ class MapManager {
     this.gameState = gameState;
     this.fantasyData = fantasyData;
     // Initialize map dimensions and seed
-    this.width = 15;
-    this.height = 12;
-    this.seed = '';
+    this.width = 20;
+    this.height = 15;
+    this.seed = "";
     // State for locations and paths
     this.locations = [];
     this.locationPaths = {};
     this.terrainMap = []; // We'll store the generated map here
   }
 
-
-
-  generateNewMap() {
+  generateNewMap(mapRenderer) {
     // Set a new seed for this generation
     this.seed = Date.now().toString().slice(-5);
     console.log(`MapManager: Generating new map with seed ${this.seed}`);
@@ -71,16 +69,16 @@ class MapManager {
     console.log("🛣️ Generated Roads - Tile Count:", roadTiles.size);
 
     // 🚧 PHASE 4: Create fixed locations for WFC
-    // This tells the WFC: "These tiles MUST be 'meadow'"
+    // This tells the WFC: "These tiles MUST be 'road'"
     const fixedLocations = [];
-    // Add the trade locations themselves (force them to be 'meadow')
+    // Add the trade locations themselves (force them to be 'road')
     locations.forEach((loc) => {
-      fixedLocations.push({ x: loc.x, y: loc.y, terrainType: "meadow" });
+      fixedLocations.push({ x: loc.x, y: loc.y, terrainType: "road" });
     });
-    // Add the road tiles (also force them to be 'meadow')
+    // Add the road tiles (also force them to be 'road')
     roadTiles.forEach((tileKey) => {
       const [x, y] = tileKey.split(",").map(Number);
-      fixedLocations.push({ x, y, terrainType: "meadow" });
+      fixedLocations.push({ x, y, terrainType: "road" });
     });
 
     // Log for debugging
@@ -125,24 +123,19 @@ class MapManager {
     const firstQuest = QuestLogic.generateQuest(this.gameState, 0, this.seed, 1);
     this.gameState.setQuest(firstQuest);
 
-    // 🚫 We are NOT calling render functions here. That's the Renderer's job.
-    // renderSimpleTerrainMap(this.terrainMap, this.fantasyData, this.width, this.height);
-    // renderLocationsOnMap(locations); // 👈 DOM markers on top
-
     // Update UI
-    // This is a small leak, but we'll move it back to main.js in Phase 3.
     document.getElementById("mapName").textContent = `${this.gameState.mapName} | Seed: ${this.seed}`;
     renderMapUI();
     document.getElementById("generateMapBtn").style.display = "none";
     document.getElementById("newMapBtn").style.display = "none";
 
+    // The MapManager's job is done. It has generated the data.
+    // Let the caller (main.js) handle the rendering.
     console.log("✅ New map generated with", locations.length, "locations");
+
   }
 
-
-
-
-    // --- MAP LAYOUT GENERATION ---
+  // --- MAP LAYOUT GENERATION ---
   /**
    * Generates the initial layout of location markers on an empty grid.
    * Ignores terrain rules for placement for MVP, focusing on spatial distribution.
@@ -232,6 +225,4 @@ class MapManager {
     }
     return centralLocation;
   }
-
-
 }

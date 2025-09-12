@@ -21,6 +21,8 @@ window.addEventListener("DOMContentLoaded", async () => {
   console.log("✅ Phase 1 Ready — Scenes loaded, stubs in place.");
 });
 
+
+
 async function initializeGame() {
   // Load data
   const [fantasyData, rulesData] = await Promise.all([
@@ -29,17 +31,25 @@ async function initializeGame() {
       .then((r) => r.json())
       .catch(() => ({})),
   ]);
-
-  // Initialize systems
+  // Initialize core systems
   gameState = new GameState(fantasyData);
   marketLogic = new MarketLogic(fantasyData.items);
   marketActions = new MarketActions(gameState, marketLogic);
   // 🆕 CREATE MAP MANAGER
   const mapManager = new MapManager(gameState, fantasyData);
-  window.mapManager = mapManager; // Make it globally accessible for now
-  window.mapManager.generateNewMap();
+  window.mapManager = mapManager; // Make it globally accessible for event listeners
+  // 🆕 CREATE MAP RENDERER
+  const mapRenderer = new MapRenderer('mapGrid');
+  window.mapRenderer = mapRenderer; // Make it globally accessible for event listeners
+  // 🆕 GENERATE THE FIRST MAP USING THE NEW SYSTEMS
+  mapManager.generateNewMap(); // 👈 Removed the renderer argument
 
-  //generateNewMap(); //
+  // ✅ NEW: AFTER GENERATION, RENDER THE MAP
+  // The map data is now in gameState and mapManager. Use the renderer to draw it.
+  if (window.mapRenderer && gameState.locations.length > 0) {
+    window.mapRenderer.renderTerrainMap(mapManager.terrainMap, fantasyData);
+    window.mapRenderer.renderLocations(gameState.locations);
+  }
 }
 
 
@@ -51,7 +61,12 @@ function wireEventListeners() {
   });
   // Wire the generate map button
   document.getElementById("generateMapBtn").addEventListener("click", () => {
-    window.mapManager.generateNewMap(); // 👈 Use the new manager
+    window.mapManager.generateNewMap(); // 👈 No renderer argument
+    // ✅ Render after generation
+    if (window.mapRenderer && gameState.locations.length > 0) {
+      window.mapRenderer.renderTerrainMap(window.mapManager.terrainMap, gameState.fantasyData);
+      window.mapRenderer.renderLocations(gameState.locations);
+    }
   });
   // Wire the new map button
   document.getElementById("newMapBtn").addEventListener("click", () => {
@@ -138,8 +153,13 @@ function updateTravelTime(location) {
 
 function resetGameAndGenerateMap() {
   gameState.reset();
-  document.getElementById("mapGrid").innerHTML = "";
-  window.mapManager.generateNewMap(); // 👈 Use the new manager
+  document.getElementById("mapGrid").innerHTML = ""; // This will clear the old canvas and markers
+  window.mapManager.generateNewMap(); // 👈 No renderer argument
+  // ✅ Render after generation
+  if (window.mapRenderer && gameState.locations.length > 0) {
+    window.mapRenderer.renderTerrainMap(window.mapManager.terrainMap, gameState.fantasyData);
+    window.mapRenderer.renderLocations(gameState.locations);
+  }
   document.getElementById("newsFeed").textContent = "📰 A new journey begins...";
 }
 
@@ -229,41 +249,6 @@ function renderSimpleTerrainMap(terrainMap, fantasyData, width, height) {
 }
 
 
-
-function renderLocationsOnMap(locations) {
-  const mapGrid = document.getElementById("mapGrid");
-
-  // Clear previous location markers (optional — if you want to avoid duplicates)
-  document.querySelectorAll(".location-marker").forEach((el) => el.remove());
-
-  locations.forEach((location) => {
-    const marker = document.createElement("div");
-    marker.className = "location-marker";
-    marker.style.left = `${location.x * 48 + 24 - 12}px`; // center horizontally
-    marker.style.top = `${location.y * 48 + 24 - 12}px`; // center vertically
-    marker.style.position = "absolute";
-    marker.style.zIndex = "10";
-    marker.style.width = "24px";
-    marker.style.height = "24px";
-    marker.style.display = "flex";
-    marker.style.alignItems = "center";
-    marker.style.justifyContent = "center";
-    marker.style.fontSize = "20px";
-    marker.style.pointerEvents = "auto"; // so you can click them!
-    marker.style.cursor = "pointer";
-    marker.textContent = location.emoji || "📍";
-
-    // Optional: tooltip
-    marker.title = location.name;
-
-    // Make it clickable
-    marker.addEventListener("click", () => {
-      switchToTrade(location._arrayIndex); // 👈 pass the actual array index
-    });
-
-    mapGrid.appendChild(marker);
-  });
-}
 
 // 🆕 REPLACE showRandomNews()
 function updateNewsPanel() {
