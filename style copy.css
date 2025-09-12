@@ -1,75 +1,30 @@
-/* === 🎨 GLOBAL VARIABLES === */
-:root {
-  /* --- COLORS --- */
-  /* Primary Action Colors */
-  --color-emerald: #3a9d7f;
-  --color-ruby: #9e1d22;
-  /* Accent & UI Colors */
-  --color-gold: #fbbf24;
-  --color-wood: #f9f5eb;
-  --color-panel-bg: #fdf6e9;
-  --color-panel-border: #e9d9b8;
-  --color-quest-bg: rgba(74, 222, 128, 0.1);
-  --color-quest-border: #4ade80;
-  --color-text: #333;
-  --color-text-muted: #666;
-
-  /* --- SPACING (Base: 1rem = 16px) --- */
-  --space-xxs: 0.25rem; /* 4px */
-  --space-xs: 0.5rem;   /* 8px */
-  --space-sm: 0.75rem;  /* 12px */
-  --space-md: 1rem;     /* 16px */
-  --space-lg: 1.5rem;   /* 24px */
-  --space-xl: 2rem;     /* 32px */
-
-  /* --- TYPOGRAPHY --- */
-  --font-size-xs: 0.75rem;  /* 12px */
-  --font-size-sm: 0.875rem; /* 14px */
-  --font-size-md: 1rem;     /* 16px */
-  --font-size-lg: 1.125rem; /* 18px */
-  --font-size-xl: 1.25rem;  /* 20px */
-
-  /* --- BORDER RADIUS --- */
-  --border-radius-sm: 4px;
-  --border-radius-md: 6px;
-  --border-radius-lg: 8px;
-
-  /* --- SHADOWS --- */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-
-  /* --- ANCHOR FOR CANVAS (Phase 3) --- */
-  --tile-size: 24px;
-}
-
 /* === Base Styles === */
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: var(--color-wood);
-  color: var(--color-text);
+  background: #f9f5eb;
+  color: #333;
   margin: 0;
   padding: 0;
 }
 
 button {
-  padding: var(--space-sm) var(--space-lg);
-  font-size: var(--font-size-md);
-  background: var(--color-emerald);
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  background: #5d9c59;
   color: white;
   border: none;
-  border-radius: var(--border-radius-md);
+  border-radius: 6px;
   cursor: pointer;
-  margin: var(--space-xs) 0;
+  margin: 0.5rem 0;
 }
 
 button:hover {
-  background: #2e7a63;
+  background: #4a7c45;
 }
 
 .scene {
   display: none;
-  padding: var(--space-lg);
+  padding: 1.5rem;
 }
 
 .scene.active {
@@ -81,13 +36,37 @@ button:hover {
   width: 100%;
   height: 400px;
   background: #f0e6d2;
-  border: 2px solid var(--color-panel-border);
-  margin: var(--space-md) auto;
+  border: 2px solid #d4c5a8;
+  margin: 1rem auto; /* 👈 CENTER THE MAP */
   display: flex;
   align-items: center;
   position: relative;
   overflow: hidden;
 }
+
+
+
+.canvas{
+
+  width: 200px;
+        height: 600px;
+        background-color: blue;
+        position: fixed; /*Can also be `fixed`*/
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        margin: auto; 
+        /*Solves a problem in which the content is being cut when the div is smaller than its' wrapper:*/
+        max-width: 100%;
+        max-height: 100%;
+        overflow: auto;
+        left: 50%;
+  top: 50%;
+}
+
+
+
 
 .location-overlay {
   position: absolute;
@@ -124,7 +103,7 @@ button:hover {
 
 .location-marker:hover {
   transform: scale(1.2);
-  transform-origin: center;
+  transform-origin: center; /* 👈 ANCHOR THE SCALE */
   background: rgba(255, 255, 255, 0.5);
   z-index: 15;
 }
@@ -135,7 +114,7 @@ button:hover {
 
 #newMapBtn {
   background: #a3a3a3;
-  margin-left: var(--space-xs);
+  margin-left: 0.5rem;
 }
 
 #newMapBtn:hover {
@@ -145,17 +124,18 @@ button:hover {
 /* === Panels === */
 .map-panels {
   display: flex;
-  gap: var(--space-md);
-  margin-top: var(--space-md);
-  min-height: 30vh;
-  height: auto;
+  gap: 1rem;
+  margin-top: 1rem;
+  min-height: 30vh; /* 👈 USE VIEWPORT HEIGHT */
+  height: auto; /* Allow it to grow if needed */
 }
+
 
 .news-panel, .inventory-panel {
   flex: 1;
   background: var(--color-panel-bg);
   border: 1px solid var(--color-panel-border);
-  border-radius: var(--border-radius-md);
+  border-radius: 6px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -165,26 +145,26 @@ button:hover {
 
 .panel-content {
   flex: 1;
-  padding: var(--space-xs);
+  padding: 0.5rem;
   overflow-y: auto;
-  font-size: var(--font-size-sm);
+  font-size: 0.9rem;
 }
 
 .news-item, .inventory-item {
-  padding: var(--space-xxs) 0;
+  padding: 0.25rem 0;
   border-bottom: 1px dotted var(--color-panel-border);
 }
 
 .quest-item {
   background: var(--color-quest-bg);
   border-left: 3px solid var(--color-quest-border);
-  padding: var(--space-xs);
-  border-radius: var(--border-radius-sm);
+  padding: 0.5rem;
+  border-radius: 4px;
   cursor: pointer;
-  margin: var(--space-xxs) 0;
+  margin: 0.25rem 0;
   display: flex;
   align-items: center;
-  gap: var(--space-xs);
+  gap: 0.5rem;
 }
 
 .quest-item:hover {
@@ -194,7 +174,7 @@ button:hover {
 .inventory-item {
   display: flex;
   align-items: center;
-  gap: var(--space-xs);
+  gap: 0.5rem;
 }
 
 .inventory-item-icon {
@@ -211,46 +191,46 @@ button:hover {
 #tradeScene {
   background: var(--color-wood);
   border: 2px solid var(--color-gold);
-  border-radius: var(--border-radius-lg);
-  padding: var(--space-md);
-  box-shadow: var(--shadow-md);
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
 #tradeHeader {
   display: flex;
   justify-content: space-between;
-  margin-bottom: var(--space-md);
-  padding-bottom: var(--space-xs);
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
   border-bottom: 1px solid var(--color-panel-border);
 }
 
 #locationName {
-  font-size: var(--font-size-lg);
+  font-size: 1.2rem;
   font-weight: bold;
   color: var(--color-text);
 }
 
 #travelTime {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
-  margin-bottom: var(--space-md);
+  font-size: 0.9rem;
+  color: #999;
+  margin-bottom: 1rem;
   font-style: italic;
 }
 
 #tradeContent {
   background: var(--color-panel-bg);
   border: 1px solid var(--color-panel-border);
-  border-radius: var(--border-radius-md);
-  padding: var(--space-md);
+  border-radius: 6px;
+  padding: 1rem;
   min-height: 300px;
 }
 
 .panel-banner {
   background: var(--color-emerald);
   color: white;
-  padding: var(--space-sm);
-  border-radius: var(--border-radius-sm);
-  margin-bottom: var(--space-md);
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
   font-weight: bold;
   text-align: center;
   border-left: 4px solid var(--color-emerald);
@@ -259,9 +239,9 @@ button:hover {
 .panel-insight {
   background: var(--color-ruby);
   color: white;
-  padding: var(--space-xs);
-  border-radius: var(--border-radius-sm);
-  margin-bottom: var(--space-md);
+  padding: 0.5rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
   font-style: italic;
   text-align: center;
   border-left: 4px solid var(--color-ruby);
@@ -271,26 +251,26 @@ button:hover {
 #itemGrid {
   display: flex;
   flex-direction: column;
-  gap: var(--space-xs);
-  margin-top: var(--space-md);
+  gap: 0.5rem;
+  margin-top: 1rem;
 }
 
 .item-row {
   display: grid;
   grid-template-columns: auto 1fr auto auto;
-  gap: var(--space-xs);
+  gap: 12px;
   align-items: center;
-  padding: var(--space-xs) var(--space-sm);
+  padding: 8px 12px;
   margin: 1px 0;
   background: #fff8e6;
-  border-radius: var(--border-radius-md);
+  border-radius: 6px;
   border-left: 3px solid #e0d0b0;
   transition: all 0.2s;
 }
 
 .item-row:hover {
   transform: translateX(4px);
-  box-shadow: var(--shadow-sm);
+  box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .item-row.good-deal {
@@ -308,7 +288,7 @@ button:hover {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-xs);
+  gap: 8px;
 }
 
 .item-icon {
@@ -319,7 +299,7 @@ button:hover {
 .deal-indicator {
   font-size: 0.7rem;
   padding: 2px 6px;
-  border-radius: var(--border-radius-sm);
+  border-radius: 4px;
   font-weight: bold;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -338,29 +318,29 @@ button:hover {
 }
 
 .item-header {
-  color: var(--color-text);
+  color: #333;
   display: flex;
   align-items: center;
-  font-size: var(--font-size-md);
+  font-size: 1rem;
   font-weight: bold;
   margin-bottom: 4px;
 }
 
 .item-price {
-  color: var(--color-text);
+  color: #333;
   font-weight: bold;
-  font-size: var(--font-size-sm);
-  margin-left: var(--space-xs);
+  font-size: 0.9rem;
+  margin-left: 8px;
 }
 
 .item-meta {
-  color: var(--color-text-muted);
-  font-size: var(--font-size-xs);
+  color: #666;
+  font-size: 0.8rem;
   line-height: 1.3;
 }
 
 .owned-count {
-  color: var(--color-text);
+  color: #333;
   font-weight: bold;
 }
 
@@ -368,42 +348,42 @@ button:hover {
 .quantity-action-row {
   display: flex;
   align-items: center;
-  gap: var(--space-xxs);
+  gap: 4px;
   margin-bottom: 6px;
 }
 
 .action-button {
-  font-size: var(--font-size-sm);
+  font-size: 0.9rem;
   font-weight: bold;
-  padding: var(--space-xs) var(--space-sm);
+  padding: 8px 12px;
   flex: 1;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .btn {
   border: none;
-  border-radius: var(--border-radius-sm);
+  border-radius: 4px;
   cursor: pointer;
   font-weight: bold;
   font-family: inherit;
   transition: all 0.2s ease;
-  padding: var(--space-xxs) var(--space-xs);
-  font-size: var(--font-size-xs);
+  padding: 4px 8px;
+  font-size: 0.8rem;
   flex: 1;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .btn:hover {
   transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .btn:active {
   transform: translateY(1px);
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .btn:disabled {
@@ -421,8 +401,8 @@ button:hover {
   color: var(--color-text);
   border: 1px solid var(--color-panel-border);
   padding: 0.3rem 0.5rem;
-  font-size: var(--font-size-xs);
-  border-radius: var(--border-radius-sm);
+  font-size: 0.8rem;
+  border-radius: 4px;
   cursor: pointer;
 }
 
@@ -430,7 +410,7 @@ button:hover {
 .sell-controls {
   display: flex;
   flex-direction: column;
-  gap: var(--space-xxs);
+  gap: 0.25rem;
   width: 120px;
 }
 
@@ -440,83 +420,201 @@ button:hover {
 
 /* === News Feed === */
 #newsFeed {
-  padding: var(--space-sm) var(--space-md);
-  background: var(--color-panel-bg);
-  border: 1px solid var(--color-panel-border);
-  border-radius: var(--border-radius-md);
-  margin: var(--space-md) 0;
+  padding: 0.75rem 1rem;
+  background: #fdf6e9;
+  border: 1px solid #e9d9b8;
+  border-radius: 6px;
+  margin: 1rem 0;
   font-style: italic;
   color: #6b4d22;
   min-height: 2rem;
 }
 
 .quest-hint {
-  font-size: var(--font-size-sm);
+  font-size: 0.85rem;
   color: #5b21b6;
-  margin: var(--space-xs) 0;
+  margin: 0.5rem 0;
   font-style: italic;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* === 📢 HEADER STYLES === */
 .header {
-  background: #e0d6c9;
-  padding: var(--space-sm) var(--space-lg);
-  border-bottom: 3px solid #c2a88a;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 60px;
+    background: #e0d6c9; /* Replaces var(--theme-bg-secondary) */
+    padding: 12px 24px;
+    border-bottom: 3px solid #c2a88a; /* Replaces var(--theme-border-accent) */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 60px; /* Replaces var(--header-height) */
 }
 
 .header-left {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+    display: flex;
+    align-items: center;
+    gap: 12px; /* Replaces var(--content-gap) */
 }
 
 .location-display {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px; /* Replaces var(--content-gap) */
 }
 
 .location-name {
-  font-size: var(--font-size-lg);
-  font-weight: bold;
-  color: var(--color-text);
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #333; /* Replaces var(--theme-text-gold) */
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.2); /* Replaces var(--shadow-game) */
 }
 
 .location-subtitle {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 1px;
+    font-size: 0.7rem;
+    color: #666; /* Replaces var(--theme-text-muted) */
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .header-stats {
-  display: flex;
-  gap: var(--space-md);
-  font-size: var(--font-size-xs);
+    display: flex;
+    gap: 12px; /* Replaces var(--content-gap) */
+    font-size: 0.7rem;
 }
 
 .stat-item {
-  padding: var(--space-xxs) var(--space-xs);
-  background: rgba(255, 255, 255, 0.6);
-  border-radius: var(--border-radius-md);
-  border: 1px solid var(--color-panel-border);
+    padding: 4px 8px; /* Replaces var(--item-padding) */
+    background: rgba(255, 255, 255, 0.6); /* Replaces var(--theme-text-bg-alpha) */
+    border-radius: 6px; /* Replaces var(--border-radius) */
+    border: 1px solid #d4c5a8; /* Replaces var(--theme-border-primary) */
 }
 
 .stat-label {
-  color: var(--color-text-muted);
+    color: #666; /* Replaces var(--theme-text-muted) */
 }
 
 .stat-value {
-  color: var(--color-text);
-  font-weight: bold;
+    color: #333; /* Replaces var(--theme-text-gold) */
+    font-weight: bold;
 }
 
+/* === REMOVE OR COMMENT OUT THE OLD HEADER STYLE === */
+/*
+header {
+  padding: 1rem;
+  background: #e0d6c9;
+  border-bottom: 2px dashed #c2a88a;
+  display: flex;
+  justify-content: space-between;
+  font-weight: 500;
+}
+*/
+
+
+
+
+
+
+
+
+
+
+/* Add this new rule to your CSS, perhaps near the .header styles */
+.back-to-map-icon {
+    display: none; /* Hidden by default */
+}
+
+/* We can also add a subtle hover effect for better UX */
+.back-to-map-icon:hover {
+    transform: scale(1.1);
+    filter: drop-shadow(3px 3px 6px rgba(0, 0, 0, 0.5));
+}
+
+
+
+/* Add this new rule for the header marker */
+.header-location-marker {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(2px);
+  cursor: pointer;
+  font-size: 1.2rem; /* Smaller than the 1.8rem in the old version */
+  filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.5));
+  transition: transform 0.2s, background 0.2s;
+}
+
+.header-location-marker:hover {
+  transform: scale(1.1);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Add style for the divider */
+.header-divider {
+  color: #666;
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin: 0 4px;
+}
+
+/* Update the gap in .header-left to be smaller for a tighter group */
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 6px; /* Reduced from 12px */
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* === 🆕 HEADER MAP MARKER (for the 'back to map' button) === */
+/* This copies the style from the map's .location-marker */
 .header-map-marker {
   width: 24px;
   height: 24px;
@@ -541,16 +639,25 @@ button:hover {
 
 /* === 🆕 HEADER LOCATION VISUAL (non-interactive icon) === */
 .header-location-visual {
-  font-size: 1.8rem;
+  font-size: 1.8rem; /* Larger than the map marker */
   filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.5));
+  /* No background, border, or special cursor */
+  /* Inherits default cursor */
 }
 
 /* Update the divider to ensure proper spacing */
 .header-divider {
-  color: var(--color-text-muted);
+  color: #666;
   font-weight: bold;
   font-size: 1.1rem;
   margin: 0 4px;
   display: flex;
   align-items: center;
+}
+
+/* Update the gap in .header-left to be smaller for a tighter group */
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 6px; /* Reduced from 12px */
 }
