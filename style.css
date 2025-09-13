@@ -23,11 +23,12 @@
   --space-xl: 2rem;     /* 32px */
 
   /* --- TYPOGRAPHY --- */
-  --font-size-xs: 0.75rem;  /* 12px */
-  --font-size-sm: 0.875rem; /* 14px */
-  --font-size-md: 1rem;     /* 16px */
-  --font-size-lg: 1.125rem; /* 18px */
-  --font-size-xl: 1.25rem;  /* 20px */
+  --font-size-md: 0.5rem; /* Base font size — change this to scale everything */
+
+  --font-size-xs: 0.75em;  /* 75% of md → 12px when md=16px */
+  --font-size-sm: 0.875em; /* 87.5% of md → 14px */
+  --font-size-lg: 1.125em; /* 112.5% of md → 18px */
+  --font-size-xl: 1.25em;  /* 125% of md → 20px */
 
   /* --- BORDER RADIUS --- */
   --border-radius-sm: 4px;
@@ -80,7 +81,7 @@ button:hover {
 #mapScene.active {
   display: flex;
   flex-direction: column;
-  min-height: 100vh; /* 👈 Take full viewport height when active */
+  min-height: 80dvh; /* 👈 Take full viewport height when active */
 }
 
 /* === Map & Location === */
@@ -88,8 +89,9 @@ button:hover {
 #mapGrid {
   width: 100%;
   background: #f0e6d2;
-  border: 2px solid #d4c5a8;
-  margin: 1rem auto;
+  border: 1px solid #d4c5a8;
+   border-radius: var(--border-radius-md);
+  /* margin: 1rem 1rem; */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -158,8 +160,8 @@ button:hover {
   display: flex;
   gap: var(--space-md);
   margin-top: var(--space-md);
-  min-height: 30vh;
-  height: auto;
+  min-height: 30dvh;
+  /* height: auto; */
 }
 
 .news-panel, .inventory-panel {

@@ -250,7 +250,7 @@ function placeLocations(wfcMap, fantasyData) {
  */
 function renderSimpleTerrainMap(terrainMap, fantasyData, width, height) {
   const mapGrid = document.getElementById("mapGrid");
-  const tileSize = 48; // Fixed tile size for simplicity
+  const tileSize = 24; // Fixed tile size for simplicity
 
   // Clear any existing canvas
   const existingCanvas = mapGrid.querySelector("canvas");

@@ -133,7 +133,7 @@ const path = GridSystem.findPath(
     this.gameState.setQuest(firstQuest);
 
     // Update UI
-    document.getElementById("mapName").textContent = `${this.gameState.mapName} | Seed: ${this.seed}`;
+   // document.getElementById("mapName").textContent = `${this.gameState.mapName} | Seed: ${this.seed}`;
     renderMapUI();
     document.getElementById("generateMapBtn").style.display = "none";
     document.getElementById("newMapBtn").style.display = "none";
