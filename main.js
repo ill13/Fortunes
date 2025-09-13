@@ -421,10 +421,10 @@ function renderTradeUI() {
     const remaining = quest.required - delivered;
     bannerContainer.style.display = "block";
     bannerContainer.innerHTML = `
-      <strong>📋 Deliver ${item.name} to ${gameState.locations[quest.toIndex].name}</strong><br>
-      You have ${delivered}, need ${quest.required}<br>
-      Reward: 🪙 ${quest.reward}
-    `;
+  <strong>📋 ACTIVE QUEST: Deliver ${item.name} to ${gameState.locations[quest.toIndex].name}</strong><br>
+  Progress: ${delivered}/${quest.required} ${delivered >= quest.required ? '✅' : ''} | Reward: 🪙 ${quest.reward} | 2 days remaining<br>
+  💡 Market Tip: ${item.name} selling 15% higher at Mountain Pass
+`;
   }
 
   // 🆕 Add Market Insight
@@ -443,9 +443,14 @@ function renderTradeUI() {
   itemsToRender.forEach((item) => {
     const price = marketLogic.getPrice(item.id, location.template);
     const owned = gameState.inventory[item.id] || 0;
-    //const stock = 5 + Math.floor(Math.random() * 6);
     const stock = gameState.getCurrentStock(item.id); // 👈 USE PRE-CALCULATED STOCK
     const dealQuality = getDealQuality(price, item.basePrice);
+
+    // 🆕 Calculate Average Price and Profit/Loss Indicator
+const avgPrice = getAveragePrice(item.id);
+const isProfit = price < avgPrice; // Buying here is a profit if price is BELOW average
+const avgCostClass = isProfit ? 'profit' : 'loss';
+const avgCostText = avgPrice > 0 ? `<span class="avg-cost ${avgCostClass}">(AVG 🪙 ${avgPrice})</span>` : '';
 
     const slot = document.createElement("div");
     slot.className = "item-row";
@@ -463,8 +468,8 @@ function renderTradeUI() {
       </div>
       <div class="item-info">
         <div class="item-header">
-          ${item.name} <span class="item-price">🪙 ${price}</span>
-        </div>
+  ${item.name} <span class="item-price">🪙 ${price} ${avgCostText}</span>
+</div>
         <div class="item-meta">
           Available: ${stock} | You own: <span class="owned-count">${owned}</span>
           ${gameState.currentQuest && gameState.currentQuest.itemId === item.id ? "<br>Perfect for your quest!" : ""}
@@ -686,6 +691,16 @@ function getDealQuality(price, basePrice) {
   } else {
     return { label: "Steep Price", class: "poor" };
   }
+}
+
+// 🆕 Helper function to calculate average price across all locations
+function getAveragePrice(itemId) {
+    if (!gameState || !gameState.fantasyData || !gameState.fantasyData.tradeNodes) return 0;
+    const allPrices = gameState.fantasyData.tradeNodes.map(node => {
+        return marketLogic.getPrice(itemId, node);
+    });
+    const sum = allPrices.reduce((a, b) => a + b, 0);
+    return Math.round(sum / allPrices.length);
 }
 
 function getDealDescription(itemId, currentLocationId) {
