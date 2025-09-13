@@ -451,13 +451,13 @@ body {
 }
 
 /* Map Scene */
-.scene {
+/* .scene {
   display: flex;
   flex-direction: column;
   padding: 1.5rem;
   flex: 1;
   min-height: 0;
-}
+} */
 
 .map-controls {
   display: flex;

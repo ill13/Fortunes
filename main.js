@@ -87,8 +87,10 @@ function wireEventListeners() {
 // =============================================================================
 
 function switchToMap() {
-  document.getElementById("mapScene").classList.add("active");
+  
   document.getElementById("tradeScene").classList.remove("active");
+  document.getElementById("mapScene").classList.add("active");
+
   document.getElementById("backToMapIcon").style.display = "block";
   gameState.currentLocationIndex = null;
   document.getElementById("locationName").textContent = "The Map";
@@ -116,8 +118,9 @@ function switchToMap() {
 function switchToTrade(locationIndex) {
   gameState.setLocation(locationIndex);
   gameState.hasVisitedLocation = true; // 👈 PLAYER HAS VISITED A LOCATION
-  document.getElementById("mapScene").classList.remove("active");
+  
   document.getElementById("tradeScene").classList.add("active");
+  document.getElementById("mapScene").classList.remove("active");
 
   const location = gameState.getLocation();
 
