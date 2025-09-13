@@ -40,6 +40,33 @@ class MapRenderer {
     }, 150); // Feels instant, prevents spam
   }
 
+  highlightCurrentLocation(gameState) {
+    // Remove existing rings
+    document.querySelectorAll(".current-location-ring").forEach((el) => el.remove());
+    const currentLocation = gameState.getLocation();
+    if (!currentLocation) return;
+    // Highlight the marker itself
+    document.querySelectorAll(".location-marker").forEach((marker) => {
+      if (marker.textContent === currentLocation.emoji) {
+        marker.style.background = "rgba(255, 255, 200, 0.6)";
+        marker.style.border = "2px solid gold";
+        marker.style.transform = "scale(1.3)";
+      } else {
+        marker.style.background = "rgba(255, 255, 255, 0.3)";
+        marker.style.border = "2px solid rgba(255, 255, 255, 0.6)";
+        marker.style.transform = "scale(1)";
+      }
+    });
+    // Keep the ring for extra emphasis
+    const ring = document.createElement("div");
+    ring.className = "current-location-ring";
+    ring.style.left = `${currentLocation.x * this.tileSize + this.tileSize / 2}px`; // 👈 Use instance tileSize
+    ring.style.top = `${currentLocation.y * this.tileSize + this.tileSize / 2}px`; // 👈 Use instance tileSize
+    ring.style.position = "absolute";
+    ring.style.zIndex = "5"; // under markers but over map
+    this.mapContainer.appendChild(ring); // 👈 Use instance mapContainer
+  }
+
   renderTerrainMap(terrainMap, fantasyData) {
     const height = terrainMap.length;
     const width = terrainMap[0].length;
@@ -103,7 +130,7 @@ class MapRenderer {
     this.fantasyData = fantasyData;
   }
 
-  renderLocations00(locations) {
+  renderLocations(locations) {
     // Clear previous location markers
     this.locationMarkers.forEach((marker) => marker.remove());
     this.locationMarkers = [];
@@ -111,126 +138,45 @@ class MapRenderer {
     // 👇 STORE LOCATIONS FOR RE-RENDERING
     this.locations = locations;
 
-    locations.forEach((location, index) => {
-      const marker = document.createElement("div");
-      marker.className = "location-marker";
+    // 🆕 🆕 🆕 DEFER RENDERING UNTIL NEXT ANIMATION FRAME
+    // This ensures the canvas (rendered by renderTerrainMap) is fully laid out in the DOM.
+    requestAnimationFrame(() => {
+      locations.forEach((location, index) => {
+        const marker = document.createElement("div");
+        marker.className = "location-marker";
+        // 🆕 NOW we can safely get the offset because the canvas has been rendered
+        const offset = this.getCanvasOffset();
+        marker.style.left = `${offset.x + location.x * this.tileSize}px`;
+        marker.style.top = `${offset.y + location.y * this.tileSize}px`;
+        marker.style.position = "absolute";
+        marker.style.zIndex = "10";
+        marker.style.width = `${this.tileSize}px`;
+        marker.style.height = `${this.tileSize}px`;
+        marker.style.display = "flex";
+        marker.style.alignItems = "center";
+        marker.style.justifyContent = "center";
+        marker.style.fontSize = `${this.tileSize * 0.8}px`;
+        marker.style.pointerEvents = "auto";
+        marker.style.cursor = "pointer";
+        marker.textContent = location.emoji || "📍";
+        marker.title = location.name;
 
-      // Position relative to the canvas origin (0,0)
-      const offset = this.getCanvasOffset();
-      marker.style.left = `${offset.x + location.x * this.tileSize}px`;
-      marker.style.top = `${offset.y + location.y * this.tileSize}px`;
-      marker.style.position = "absolute";
-      marker.style.zIndex = "10";
-      marker.style.width = `${this.tileSize}px`;
-      marker.style.height = `${this.tileSize}px`;
-      marker.style.display = "flex";
-      marker.style.alignItems = "center";
-      marker.style.justifyContent = "center";
-      marker.style.fontSize = `${this.tileSize * 0.8}px`;
-      marker.style.pointerEvents = "auto";
-      marker.style.cursor = "pointer";
-      marker.textContent = location.emoji || "📍";
-      marker.title = location.name;
+        // Make it clickable
+        marker.addEventListener("click", () => {
+          if (window.switchToTrade) {
+            window.switchToTrade(index);
+          } else {
+            console.error("MapRenderer: switchToTrade is not available globally.");
+          }
+        });
 
-      // Make it clickable
-      marker.addEventListener("click", () => {
-        if (window.switchToTrade) {
-          window.switchToTrade(index);
-        } else {
-          console.error("MapRenderer: switchToTrade is not available globally.");
-        }
+        // 👇 APPEND MARKER TO mapContainer
+        this.mapContainer.appendChild(marker);
+        // 👇 TRACK THE MARKER
+        this.locationMarkers.push(marker);
       });
-
-      // 👇 APPEND MARKER TO mapContainer, NOT canvas
-      // This ensures it's in the correct stacking context and will be visible.
-      this.mapContainer.appendChild(marker);
     });
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-renderLocations(locations) {
-  // Clear previous location markers
-  this.locationMarkers.forEach((marker) => marker.remove());
-  this.locationMarkers = [];
-
-  // 👇 STORE LOCATIONS FOR RE-RENDERING
-  this.locations = locations;
-
-  // 🆕 🆕 🆕 DEFER RENDERING UNTIL NEXT ANIMATION FRAME
-  // This ensures the canvas (rendered by renderTerrainMap) is fully laid out in the DOM.
-  requestAnimationFrame(() => {
-    locations.forEach((location, index) => {
-      const marker = document.createElement("div");
-      marker.className = "location-marker";
-      // 🆕 NOW we can safely get the offset because the canvas has been rendered
-      const offset = this.getCanvasOffset();
-      marker.style.left = `${offset.x + location.x * this.tileSize}px`;
-      marker.style.top = `${offset.y + location.y * this.tileSize}px`;
-      marker.style.position = "absolute";
-      marker.style.zIndex = "10";
-      marker.style.width = `${this.tileSize}px`;
-      marker.style.height = `${this.tileSize}px`;
-      marker.style.display = "flex";
-      marker.style.alignItems = "center";
-      marker.style.justifyContent = "center";
-      marker.style.fontSize = `${this.tileSize * 0.8}px`;
-      marker.style.pointerEvents = "auto";
-      marker.style.cursor = "pointer";
-      marker.textContent = location.emoji || "📍";
-      marker.title = location.name;
-
-      // Make it clickable
-      marker.addEventListener("click", () => {
-        if (window.switchToTrade) {
-          window.switchToTrade(index);
-        } else {
-          console.error("MapRenderer: switchToTrade is not available globally.");
-        }
-      });
-
-      // 👇 APPEND MARKER TO mapContainer
-      this.mapContainer.appendChild(marker);
-      // 👇 TRACK THE MARKER
-      this.locationMarkers.push(marker);
-    });
-  });
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   // Inside MapRenderer class
   getCanvasOffset() {

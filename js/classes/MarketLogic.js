@@ -14,26 +14,40 @@ class MarketLogic {
     return Math.round(item.basePrice * multiplier);
   }
 
-  // Returns: "good", "fair", "bad"
   getDealQuality(price, basePrice) {
     const ratio = price / basePrice;
-    if (ratio <= 0.85) return "good";
-    if (ratio <= 1.15) return "fair";
-    return "bad";
+    if (ratio <= 0.85) {
+      return { label: "Rare Bargain!", class: "good" };
+    } else if (ratio <= 1.15) {
+      return { label: "Fair Deal", class: "fair" };
+    } else {
+      return { label: "Steep Price", class: "poor" };
+    }
   }
 
   getDealQualityLabel(quality) {
-    return {
-      good: "🔥 Good Deal",
-      fair: "💸 Fair Price",
-      bad: "🚫 Overpriced"
-    }[quality] || "💸 Fair Price";
+    return (
+      {
+        good: "🔥 Good Deal",
+        fair: "💸 Fair Price",
+        bad: "🚫 Overpriced",
+      }[quality] || "💸 Fair Price"
+    );
+  }
+
+  getAveragePrice(itemId, tradeNodes) {
+    if (!tradeNodes || tradeNodes.length === 0) return 0;
+    const allPrices = tradeNodes.map((node) => {
+      return this.getPrice(itemId, node); // 👈 Uses `this` to call the class's own method
+    });
+    const sum = allPrices.reduce((a, b) => a + b, 0);
+    return Math.round(sum / allPrices.length);
   }
 
   // Simple quest generator — optional delivery quest
   generateQuest(locationTemplate, ownedItems) {
     // Only if player owns something
-    const ownedIds = Object.keys(ownedItems).filter(id => ownedItems[id] > 0);
+    const ownedIds = Object.keys(ownedItems).filter((id) => ownedItems[id] > 0);
     if (ownedIds.length === 0) return null;
 
     // 30% chance to offer quest
@@ -48,7 +62,7 @@ class MarketLogic {
       itemName: this.items[targetItem].name,
       itemEmoji: this.items[targetItem].emoji,
       reward: reward,
-      flavor: `“Deliver ${this.items[targetItem].name} to me — I’ll pay ${reward} gold!”`
+      flavor: `“Deliver ${this.items[targetItem].name} to me — I’ll pay ${reward} gold!”`,
     };
   }
 }

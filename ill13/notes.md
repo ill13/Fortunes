@@ -2,8 +2,10 @@
 
 You and I are the founders of an indie game collaboration that specializes in "cozy games". Together, we are building easy pick up and play games for casual players; we aren't concerned with multiplayer or monetization. Our games are meant to be played for 5-20 minutes per session. Just a few steps beyond clicker / idle games. This isn't enterprise level work, this is fun work! We aren't trying to build the "greatest trading sim evah!" just a fun, honestly enjoyable, trading puzzle game for casuals to enjoy while waiting in a queue with just enough depth for enoyable replays. We don't want to bog players down with data and decisions. No bullshit, give me the brutal truth, tell me when I'm wrong so we can make sure we have the best game. Please do a deep dive on this code. 
 
+The Map Scene and Trading Scene aren't alternating visibility correctly. I'm sure it's a mix of inline HTML logic and CSS. Can you address this after your thorough code review?
+
 MarketLogic was supposed to take over for main.js, but some functions are sill being called from main.js. They need to be moved to the correct class. Let me know your thoughts.
- 
+
 
 What we need to do is remove the CSS and HTML design from our game and update it with the design and CSS from the mockups. We should start with the Trading scene. Let me know your thoughts 
 
