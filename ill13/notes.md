@@ -3,11 +3,18 @@
 You and I are the founders of an indie game collaboration that specializes in "cozy games". Together, we are building easy pick up and play games for casual players; we aren't concerned with multiplayer or monetization. Our games are meant to be played for 5-20 minutes per session. Just a few steps beyond clicker / idle games. This isn't enterprise level work, this is fun work! We aren't trying to build the "greatest trading sim evah!" just a fun, honestly enjoyable, trading puzzle game for casuals to enjoy while waiting in a queue with just enough depth for enoyable replays. We don't want to bog players down with data and decisions. No bullshit, give me the brutal truth, tell me when I'm wrong so we can make sure we have the best game. Please do a deep dive on this code. 
 
 
+We've got a big change to implement. We need to update our trading screen with a simplified mobile interface. Let me know your thoughts.
+
+
+
+On mobile, this game's elements only fit neatly on screen at 55% reduction. What are your thoughts on addressing this?
 
 
 
 
+Something is wrong with your artifact editing and I can not see your updates. This has been an ongoing issue for well over a month for ALL Claude users.
 
+Market Insight
 
 Inventory Cap (15) is Not Enforced: You display 0/15 in the UI, but the MarketActions class doesn't check if the player is over the limit before buying. A player can buy 20 fish if they have the gold. For a cozy game, you should probably enforce this to add a light strategic element. Add a check in executeTrade and quickBuyAll.
 
@@ -60,7 +67,7 @@ So think about auto tiling. Use the 8x8 tile set, give the
 
 
 
-I like your plan! Please write a detailed software developement plan to complete these updates!
+I like your plan! Please write a detailed software development plan to complete these updates!
 
 
 

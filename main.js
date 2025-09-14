@@ -337,20 +337,22 @@ function renderTradeUI() {
         </div>
       </div>
       <div class="buy-controls">
+      <button class="btn btn-buy action-button quick-buy-all" data-item="${item.id}">Buy All (${stock})</button>
         <div class="quantity-action-row">
           <button class="quantity-btn" data-action="decrease" data-item="${item.id}">−</button>
           <button class="btn btn-buy action-button buy" data-item="${item.id}">BUY 1</button>
           <button class="quantity-btn" data-action="increase" data-item="${item.id}">+</button>
         </div>
-        <button class="btn btn-buy action-button quick-buy-all" data-item="${item.id}">Buy All (${stock})</button>
+        
       </div>
       <div class="sell-controls">
+      <button class="btn btn-sell action-button quick-sell-all" data-item="${item.id}">Sell All (${owned})</button>
         <div class="quantity-action-row">
           <button class="quantity-btn" data-action="decrease" data-item="${item.id}" style="background: var(--color-ruby); color: white;">−</button>
           <button class="btn btn-sell action-button sell" data-item="${item.id}">SELL 1</button>
           <button class="quantity-btn" data-action="increase" data-item="${item.id}" style="background: var(--color-ruby); color: white;">+</button>
         </div>
-        <button class="btn btn-sell action-button quick-sell-all" data-item="${item.id}">Sell All (${owned})</button>
+        
       </div>
     `;
     grid.appendChild(slot);
