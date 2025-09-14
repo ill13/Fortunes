@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="manifest.json" />
     <title>Cozy Trading Sim</title>
     <link rel="stylesheet" href="style.css" />
   </head>
@@ -51,42 +51,51 @@
       </div>
     </div>
 
-   <!-- Trade Scene -->
-<div id="tradeScene" class="scene">
-  <!-- ✅ REMOVED: <button id="backToMapBtn">← Back to Map</button> -->
-  <div id="tradeHeader">
-    <div id="locationName"></div>
-    <!-- ✅ This is where the location name goes now -->
-    <div id="travelTime"></div>
-  </div>
-  <div id="tradeContent">
-    <div id="questBanner" class="panel-banner"></div>
-    <div id="marketInsight" class="panel-insight"></div>
-    <div id="itemGrid"></div>
-  </div>
-</div>
+    <!-- Trade Scene -->
+    <div id="tradeScene" class="scene">
+      <!-- ✅ REMOVED: <button id="backToMapBtn">← Back to Map</button> -->
+      <div id="tradeHeader">
+        <div id="locationName"></div>
+        <!-- ✅ This is where the location name goes now -->
+        <div id="travelTime"></div>
+      </div>
+      <!-- ✅ ADD THESE TWO LINES -->
+      <div class="quest-banner"></div>
+      <div class="market-insight"></div>
+      <!-- Trading Container -->
+      <div class="trading-container">
+        <div class="trade-grid">
+          <!-- Cards will be dynamically inserted here by JavaScript -->
+        </div>
 
-    <!-- Utils -->
-    <script src="js/utils/seedrandom.js"></script>
+        <!-- LCD Scroll Indicator -->
+        <div class="scroll-indicator">
+          <span>More items below</span>
+          <span class="scroll-arrow">↓</span>
+        </div>
+      </div>
 
-    <!-- Core Game Systems -->
-    <script src="js/classes/GameState.js"></script>
-    <script src="js/classes/MarketLogic.js"></script>
-    <script src="js/classes/MarketActions.js"></script>
-    <script src="js/classes/GridSystem.js"></script>
+      <!-- Utils -->
+      <script src="js/utils/seedrandom.js"></script>
 
-    <!-- Map Gen Systems -->
-    <script src="js/classes/WaveFunctionCollapse.js"></script>
-    <script src="js/classes/MapNamer.js"></script>
-    <!-- <script src="js/classes/ParchmentOverlay.js"></script> -->
-    <script src="js/classes/MapManager.js"></script>
-    <script src="js/classes/MapRenderer.js"></script>
+      <!-- Core Game Systems -->
+      <script src="js/classes/GameState.js"></script>
+      <script src="js/classes/MarketLogic.js"></script>
+      <script src="js/classes/MarketActions.js"></script>
+      <script src="js/classes/GridSystem.js"></script>
 
-    <!-- Quest System -->
-    <script src="js/classes/QuestLogic.js"></script>
+      <!-- Map Gen Systems -->
+      <script src="js/classes/WaveFunctionCollapse.js"></script>
+      <script src="js/classes/MapNamer.js"></script>
+      <!-- <script src="js/classes/ParchmentOverlay.js"></script> -->
+      <script src="js/classes/MapManager.js"></script>
+      <script src="js/classes/MapRenderer.js"></script>
 
-    <!-- Main App -->
-    <script src="main.js"></script>
-  </div>
+      <!-- Quest System -->
+      <script src="js/classes/QuestLogic.js"></script>
+
+      <!-- Main App -->
+      <script src="main.js"></script>
+    </div>
   </body>
 </html>

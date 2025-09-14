@@ -25,6 +25,17 @@ class MarketLogic {
     }
   }
 
+
+    // New method for mobile UI: Returns 1 (great), 2 (fair), or 3 (poor)
+  getCoinValue(price, basePrice) {
+    const ratio = price / basePrice;
+    if (ratio <= 0.85) return 1; // Great Deal = 1 coin
+    if (ratio <= 1.15) return 2; // Fair Deal = 2 coins
+    return 3; // Poor Deal = 3 coins
+  }
+
+  
+
   getDealQualityLabel(quality) {
     return (
       {

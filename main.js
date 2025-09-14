@@ -87,7 +87,6 @@ function wireEventListeners() {
 // =============================================================================
 
 function switchToMap() {
-  
   document.getElementById("tradeScene").classList.remove("active");
   document.getElementById("mapScene").classList.add("active");
 
@@ -118,7 +117,7 @@ function switchToMap() {
 function switchToTrade(locationIndex) {
   gameState.setLocation(locationIndex);
   gameState.hasVisitedLocation = true; // 👈 PLAYER HAS VISITED A LOCATION
-  
+
   document.getElementById("tradeScene").classList.add("active");
   document.getElementById("mapScene").classList.remove("active");
 
@@ -259,107 +258,141 @@ function renderMapUI() {
   }
 }
 
+
 function renderTradeUI() {
-  const grid = document.getElementById("itemGrid");
-  grid.innerHTML = "";
+  const container = document.querySelector(".trade-grid");
+  if (!container) {
+    console.error("renderTradeUI: .trade-grid container not found.");
+    return;
+  }
+  container.innerHTML = ""; // Clear any existing content
+
   const location = gameState.getLocation();
   if (!location || !location.template) {
-    grid.innerHTML = `<div class="item-slot">No location loaded</div>`;
+    container.innerHTML = `<div class="item-slot">No location loaded</div>`;
     return;
   }
 
-  // 🆕 Add Quest Banner
-  const bannerContainer = document.getElementById("questBanner");
-  bannerContainer.style.display = "none";
-  if (QuestLogic.updateNewsUI(gameState)) {
-    const quest = gameState.currentQuest;
-    const item = gameState.fantasyData.items.find((i) => i.id === quest.itemId);
-    const delivered = quest.delivered || 0;
-    const remaining = quest.required - delivered;
-    bannerContainer.style.display = "block";
-    bannerContainer.innerHTML = `
-  <strong>📋 ACTIVE QUEST: Deliver ${item.name} to ${gameState.locations[quest.toIndex].name}</strong><br>
-  Progress: ${delivered}/${quest.required} ${delivered >= quest.required ? "✅" : ""} | Reward: 🪙 ${quest.reward} | 2 days remaining<br>
-  💡 Market Tip: ${item.name} selling 15% higher at Mountain Pass
+      // ✅ FIXED: Use CLASS selectors for consistency
+    const bannerContainer = document.querySelector('.quest-banner');
+    if (bannerContainer) {
+        bannerContainer.style.display = "none";
+        if (QuestLogic.updateNewsUI(gameState)) {
+            const quest = gameState.currentQuest;
+            const item = gameState.fantasyData.items.find((i) => i.id === quest.itemId);
+            const delivered = quest.delivered || 0;
+            const remaining = quest.required - delivered;
+            bannerContainer.style.display = "block";
+            bannerContainer.innerHTML = `
+<strong>📋 ACTIVE QUEST: Deliver ${item.name} to ${gameState.locations[quest.toIndex].name}</strong><br>
+Progress: ${delivered}/${quest.required} ${delivered >= quest.required ? "✅" : ""} | Reward: 🪙 ${quest.reward} | 2 days remaining
 `;
-  }
+        }
+    } else {
+        console.warn("Quest banner element (.quest-banner) not found in DOM.");
+    }
 
-  // 🆕 Add Market Insight
-  const insightEl = document.getElementById("marketInsight");
-  const items = gameState.fantasyData.items;
-  const avgRatio =
-    items.reduce((sum, item) => {
-      const price = marketLogic.getPrice(item.id, location.template);
-      return sum + price / item.basePrice;
-    }, 0) / items.length;
-  const insightText = avgRatio <= 0.95 ? "🌟 Great prices here! (10% below average)" : avgRatio <= 1.05 ? "🙂 Fair market today." : "⚠️ Overpriced — try elsewhere";
-  insightEl.textContent = insightText;
-
-  // Render Items — ✅ STRUCTURE MATCHES OLD VERSION
+    // ✅ FIXED: Use CLASS selectors for consistency
+    const insightEl = document.querySelector('.market-insight');
+    if (insightEl) {
+        const items = gameState.fantasyData.items;
+        const avgRatio =
+            items.reduce((sum, item) => {
+                const price = marketLogic.getPrice(item.id, location.template);
+                return sum + price / item.basePrice;
+            }, 0) / items.length;
+        const insightText = avgRatio <= 0.95 ? "🌟 Great prices here! (10% below average)" : avgRatio <= 1.05 ? "🙂 Fair market today." : "⚠️ Overpriced — try elsewhere";
+        insightEl.textContent = insightText;
+    } else {
+        console.warn("Market insight element (.market-insight) not found in DOM.");
+    }
+  // Render Items — ✅ NEW MOBILE STRUCTURE
   const itemsToRender = gameState.fantasyData.items;
   itemsToRender.forEach((item) => {
     const price = marketLogic.getPrice(item.id, location.template);
-    const owned = gameState.inventory[item.id] || 0;
-    const stock = gameState.getCurrentStock(item.id); // 👈 USE PRE-CALCULATED STOCK
-    const dealQuality = marketLogic.getDealQuality(price, item.basePrice);
+    const owned = gameState.getInventoryCount(item.id); // 👈 Use the new method
+    const stock = gameState.getCurrentStock(item.id);
+    const basePrice = item.basePrice;
 
-    // 🆕 Calculate Average Price and Profit/Loss Indicator
-    const avgPrice = marketLogic.getAveragePrice(item.id, gameState.fantasyData.tradeNodes);
-    const isProfit = price < avgPrice; // Buying here is a profit if price is BELOW average
-    const avgCostClass = isProfit ? "profit" : "loss";
-    const avgCostText = avgPrice > 0 ? `<span class="avg-cost ${avgCostClass}">(AVG 🪙 ${avgPrice})</span>` : "";
+    // 🆕 Get the coin value (1, 2, or 3)
+    const coinValue = marketLogic.getCoinValue(price, basePrice);
 
-    const slot = document.createElement("div");
-    slot.className = "item-row";
-    if (dealQuality.class === "good") slot.classList.add("good-deal");
-    if (dealQuality.class === "poor") slot.classList.add("bad-deal");
-    if (stock === 0) slot.classList.add("no-stock");
+    // Create the card element
+    const card = document.createElement("div");
+    card.className = "trade-card";
+    card.dataset.itemId = item.id; // 👈 Crucial for button handlers
 
-    slot.dataset.itemId = item.id;
-    slot.innerHTML = `
-      <div class="item-visual">
-        <div class="item-icon">${item.emoji}</div>
-        <div class="deal-indicator ${dealQuality.class === "good" ? "deal-great" : dealQuality.class === "fair" ? "deal-fair" : "deal-poor"}">
-          ${dealQuality.label.split(" ")[0]}
-        </div>
-      </div>
-      <div class="item-info">
-        <div class="item-header">
-  ${item.name} <span class="item-price">🪙 ${price} ${avgCostText}</span>
-</div>
-        <div class="item-meta">
-          Available: ${stock} | You own: <span class="owned-count">${owned}</span>
-          ${gameState.currentQuest && gameState.currentQuest.itemId === item.id ? "<br>Perfect for your quest!" : ""}
-          ${stock <= 2 && stock > 0 ? "<br>Limited stock - act fast!" : ""}
-          ${dealQuality.class === "poor" ? "<br>Overpriced here - try elsewhere" : ""}
-          ${dealQuality.class === "good" ? "<br>Excellent value!" : ""}
-          ${dealQuality.class === "fair" ? "<br>Standard market price" : ""}
-        </div>
-      </div>
-      <div class="buy-controls">
-      <button class="btn btn-buy action-button quick-buy-all" data-item="${item.id}">Buy All (${stock})</button>
-        <div class="quantity-action-row">
-          <button class="quantity-btn" data-action="decrease" data-item="${item.id}">−</button>
-          <button class="btn btn-buy action-button buy" data-item="${item.id}">BUY 1</button>
-          <button class="quantity-btn" data-action="increase" data-item="${item.id}">+</button>
-        </div>
-        
-      </div>
-      <div class="sell-controls">
-      <button class="btn btn-sell action-button quick-sell-all" data-item="${item.id}">Sell All (${owned})</button>
-        <div class="quantity-action-row">
-          <button class="quantity-btn" data-action="decrease" data-item="${item.id}" style="background: var(--color-ruby); color: white;">−</button>
-          <button class="btn btn-sell action-button sell" data-item="${item.id}">SELL 1</button>
-          <button class="quantity-btn" data-action="increase" data-item="${item.id}" style="background: var(--color-ruby); color: white;">+</button>
-        </div>
-        
-      </div>
-    `;
-    grid.appendChild(slot);
+    // Apply dynamic classes
+    if (gameState.currentQuest && gameState.currentQuest.itemId === item.id) {
+      card.classList.add("quest-item");
+    }
+    if (stock === 0) {
+      card.classList.add("no-stock");
+    }
+
+    // Build the card's inner HTML
+    card.innerHTML = `
+            <div class="card-header">
+                <div class="item-info">
+                    <div class="item-emoji">${item.emoji}</div>
+                    <div class="item-details">
+                        <h3>${item.name}</h3>
+                        <div class="item-subtitle">
+                            ${stock === 0 ? "Out of stock" : coinValue === 1 ? "Great price for buying" : coinValue === 3 ? "Overpriced here" : "Standard market price"}<br>
+                            Available: ${stock}
+                            ${gameState.currentQuest && gameState.currentQuest.itemId === item.id ? "<br>✨ NEEDED FOR QUEST!" : ""}
+                        </div>
+                    </div>
+                </div>
+                <div class="price-section">
+                    <div class="item-price">${price} 🪙</div>
+                    <div class="deal-indicator deal-${coinValue === 1 ? "great" : coinValue === 2 ? "fair" : "poor"}">
+                        ${"🪙".repeat(coinValue)}
+                    </div>
+                </div>
+            </div>
+            <div class="action-row">
+                <button class="action-btn btn-buy ${getBuyButtonClass(coinValue)}" ${canBuy(item.id, price, stock) ? "" : "disabled"}>BUY</button>
+                <div class="owned-display">Own: ${owned}</div>
+                <button class="action-btn btn-sell ${getSellButtonClass(coinValue)}" ${canSell(owned) ? "" : "disabled"}>SELL</button>
+            </div>
+        `;
+
+    container.appendChild(card);
   });
 
+  // Wire up the new, simple buttons
   wireTradeButtons();
+
+  // Keep existing global UI updates
   updateGlobalCounters();
+
+  // Log for confirmation
+  console.log("✅ Phase 2 Complete: Dynamic mobile UI rendered with coin logic.");
+}
+
+// 🆕 Helper function: Determines the CSS class for the BUY button
+function getBuyButtonClass(coinValue) {
+  if (coinValue === 1) return "hot-buy"; // Great deal to buy
+  if (coinValue === 3) return "cold-buy"; // Poor deal to buy
+  return ""; // Fair deal, use default style
+}
+
+// 🆕 Helper function: Determines the CSS class for the SELL button
+function getSellButtonClass(coinValue) {
+  if (coinValue === 3) return "hot-sell"; // Great deal to sell (because it's expensive)
+  if (coinValue === 1) return "cold-sell"; // Poor deal to sell (because it's cheap)
+  return ""; // Fair deal, use default style
+}
+
+// 🆕 Helper function: Checks if the player can buy an item
+function canBuy(itemId, price, stock) {
+  return stock > 0 && gameState.gold >= price;
+}
+
+// 🆕 Helper function: Checks if the player can sell an item
+function canSell(owned) {
+  return owned > 0;
 }
 
 function updateGlobalCounters() {
@@ -382,10 +415,39 @@ function updateGlobalCounters() {
 // =============================================================================
 // TRADING SYSTEM
 // =============================================================================
-function wireTradeButtons() {
+function wireTradeButton_00() {
   wireBasicTradeButtons();
   wireQuickTradeButtons();
   wireQuantityButtons();
+}
+
+function wireTradeButtons() {
+  // Wire BUY buttons
+  document.querySelectorAll(".btn-buy").forEach((btn) => {
+    // Remove any existing listeners to prevent duplicates
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+    newBtn.addEventListener("click", (e) => {
+      if (!newBtn.disabled) {
+        const itemId = e.target.closest(".trade-card").dataset.itemId;
+        marketActions.executeTrade(itemId, "buy");
+        renderTradeUI(); // Re-render to update counts and button states
+      }
+    });
+  });
+
+  // Wire SELL buttons
+  document.querySelectorAll(".btn-sell").forEach((btn) => {
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+    newBtn.addEventListener("click", (e) => {
+      if (!newBtn.disabled) {
+        const itemId = e.target.closest(".trade-card").dataset.itemId;
+        marketActions.executeTrade(itemId, "sell");
+        renderTradeUI();
+      }
+    });
+  });
 }
 
 function wireBasicTradeButtons() {
